@@ -1,4 +1,4 @@
-#pragma once
+п»ї#pragma once
 
 #include <iostream>
 #include <iterator>
@@ -8,45 +8,44 @@
 #include <exception>
 
 /*
-Структуру данных оформить в виде контейнера, с поддержкой итераторов соответствующей категории.
-Любые аспекты реализации должны быть инкапсулированы (спрятаны),
-работа только посредством итераторов и соответствующих методов шаблона.
-Названия методов должны совпадать с таковыми у контейнеров set и multiset стандартной библиотеки.
-Должны быть реализованы методы upper_bound и lower_bound.
-Замечание: указанные контейнеры в стандартной библиотеке поддерживают различные типы итераторов,
-относящиеся к категории двунаправленных итераторов – константные и неконстантные, прямые и обратные.
-Константные и неконстантные имеют одинаковую семантику и являются, по сути, константными итераторами.
-Соответственно, реализовывать константный итератор либо не нужно, либо сделать это с
-минимальными затратами как псевдоним неконстантного. Обратные итераторы реализовывать не требуется.
+РЎС‚СЂСѓРєС‚СѓСЂСѓ РґР°РЅРЅС‹С… РѕС„РѕСЂРјРёС‚СЊ РІ РІРёРґРµ РєРѕРЅС‚РµР№РЅРµСЂР°, СЃ РїРѕРґРґРµСЂР¶РєРѕР№ РёС‚РµСЂР°С‚РѕСЂРѕРІ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰РµР№ РєР°С‚РµРіРѕСЂРёРё.
+Р›СЋР±С‹Рµ Р°СЃРїРµРєС‚С‹ СЂРµР°Р»РёР·Р°С†РёРё РґРѕР»Р¶РЅС‹ Р±С‹С‚СЊ РёРЅРєР°РїСЃСѓР»РёСЂРѕРІР°РЅС‹ (СЃРїСЂСЏС‚Р°РЅС‹),
+СЂР°Р±РѕС‚Р° С‚РѕР»СЊРєРѕ РїРѕСЃСЂРµРґСЃС‚РІРѕРј РёС‚РµСЂР°С‚РѕСЂРѕРІ Рё СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰РёС… РјРµС‚РѕРґРѕРІ С€Р°Р±Р»РѕРЅР°.
+РќР°Р·РІР°РЅРёСЏ РјРµС‚РѕРґРѕРІ РґРѕР»Р¶РЅС‹ СЃРѕРІРїР°РґР°С‚СЊ СЃ С‚Р°РєРѕРІС‹РјРё Сѓ РєРѕРЅС‚РµР№РЅРµСЂРѕРІ set Рё multiset СЃС‚Р°РЅРґР°СЂС‚РЅРѕР№ Р±РёР±Р»РёРѕС‚РµРєРё.
+Р”РѕР»Р¶РЅС‹ Р±С‹С‚СЊ СЂРµР°Р»РёР·РѕРІР°РЅС‹ РјРµС‚РѕРґС‹ upper_bound Рё lower_bound.
+Р—Р°РјРµС‡Р°РЅРёРµ: СѓРєР°Р·Р°РЅРЅС‹Рµ РєРѕРЅС‚РµР№РЅРµСЂС‹ РІ СЃС‚Р°РЅРґР°СЂС‚РЅРѕР№ Р±РёР±Р»РёРѕС‚РµРєРµ РїРѕРґРґРµСЂР¶РёРІР°СЋС‚ СЂР°Р·Р»РёС‡РЅС‹Рµ С‚РёРїС‹ РёС‚РµСЂР°С‚РѕСЂРѕРІ,
+РѕС‚РЅРѕСЃСЏС‰РёРµСЃСЏ Рє РєР°С‚РµРіРѕСЂРёРё РґРІСѓРЅР°РїСЂР°РІР»РµРЅРЅС‹С… РёС‚РµСЂР°С‚РѕСЂРѕРІ вЂ“ РєРѕРЅСЃС‚Р°РЅС‚РЅС‹Рµ Рё РЅРµРєРѕРЅСЃС‚Р°РЅС‚РЅС‹Рµ, РїСЂСЏРјС‹Рµ Рё РѕР±СЂР°С‚РЅС‹Рµ.
+РљРѕРЅСЃС‚Р°РЅС‚РЅС‹Рµ Рё РЅРµРєРѕРЅСЃС‚Р°РЅС‚РЅС‹Рµ РёРјРµСЋС‚ РѕРґРёРЅР°РєРѕРІСѓСЋ СЃРµРјР°РЅС‚РёРєСѓ Рё СЏРІР»СЏСЋС‚СЃСЏ, РїРѕ СЃСѓС‚Рё, РєРѕРЅСЃС‚Р°РЅС‚РЅС‹РјРё РёС‚РµСЂР°С‚РѕСЂР°РјРё.
+РЎРѕРѕС‚РІРµС‚СЃС‚РІРµРЅРЅРѕ, СЂРµР°Р»РёР·РѕРІС‹РІР°С‚СЊ РєРѕРЅСЃС‚Р°РЅС‚РЅС‹Р№ РёС‚РµСЂР°С‚РѕСЂ Р»РёР±Рѕ РЅРµ РЅСѓР¶РЅРѕ, Р»РёР±Рѕ СЃРґРµР»Р°С‚СЊ СЌС‚Рѕ СЃ
+РјРёРЅРёРјР°Р»СЊРЅС‹РјРё Р·Р°С‚СЂР°С‚Р°РјРё РєР°Рє РїСЃРµРІРґРѕРЅРёРј РЅРµРєРѕРЅСЃС‚Р°РЅС‚РЅРѕРіРѕ. РћР±СЂР°С‚РЅС‹Рµ РёС‚РµСЂР°С‚РѕСЂС‹ СЂРµР°Р»РёР·РѕРІС‹РІР°С‚СЊ РЅРµ С‚СЂРµР±СѓРµС‚СЃСЏ.
 
-Обязательно прохождение всех тестов для соответствующего типа контейнера (тестирующий проект размещен в архиве,
-также есть ссылка на обучающее видео).
+РћР±СЏР·Р°С‚РµР»СЊРЅРѕ РїСЂРѕС…РѕР¶РґРµРЅРёРµ РІСЃРµС… С‚РµСЃС‚РѕРІ РґР»СЏ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰РµРіРѕ С‚РёРїР° РєРѕРЅС‚РµР№РЅРµСЂР° (С‚РµСЃС‚РёСЂСѓСЋС‰РёР№ РїСЂРѕРµРєС‚ СЂР°Р·РјРµС‰РµРЅ РІ Р°СЂС…РёРІРµ,
+С‚Р°РєР¶Рµ РµСЃС‚СЊ СЃСЃС‹Р»РєР° РЅР° РѕР±СѓС‡Р°СЋС‰РµРµ РІРёРґРµРѕ).
 
-На основе выбранной структуры данных реализовать шаблон множества, поддерживающий следующие операции:
+РќР° РѕСЃРЅРѕРІРµ РІС‹Р±СЂР°РЅРЅРѕР№ СЃС‚СЂСѓРєС‚СѓСЂС‹ РґР°РЅРЅС‹С… СЂРµР°Р»РёР·РѕРІР°С‚СЊ С€Р°Р±Р»РѕРЅ РјРЅРѕР¶РµСЃС‚РІР°, РїРѕРґРґРµСЂР¶РёРІР°СЋС‰РёР№ СЃР»РµРґСѓСЋС‰РёРµ РѕРїРµСЂР°С†РёРё:
 
-1. Добавление, извлечение элементов, поиск (проверка на вхождение);
-2. Вывод содержимого структуры данных на экран «боком» (если явно указана возможность печати);
-3. Для каждой операции добавления и удаления реализовать подсчет количества вращений для восстановления балансировки;
-4. Сохранение в файл и чтение из файла (текстовый);
-5. Сравнить эффективность реализации структуры данных с соответствующим стандартным контейнером – временные тесты на некоторых последовательностях значений.
+1. Р”РѕР±Р°РІР»РµРЅРёРµ, РёР·РІР»РµС‡РµРЅРёРµ СЌР»РµРјРµРЅС‚РѕРІ, РїРѕРёСЃРє (РїСЂРѕРІРµСЂРєР° РЅР° РІС…РѕР¶РґРµРЅРёРµ);
+2. Р’С‹РІРѕРґ СЃРѕРґРµСЂР¶РёРјРѕРіРѕ СЃС‚СЂСѓРєС‚СѓСЂС‹ РґР°РЅРЅС‹С… РЅР° СЌРєСЂР°РЅ В«Р±РѕРєРѕРјВ» (РµСЃР»Рё СЏРІРЅРѕ СѓРєР°Р·Р°РЅР° РІРѕР·РјРѕР¶РЅРѕСЃС‚СЊ РїРµС‡Р°С‚Рё);
+3. Р”Р»СЏ РєР°Р¶РґРѕР№ РѕРїРµСЂР°С†РёРё РґРѕР±Р°РІР»РµРЅРёСЏ Рё СѓРґР°Р»РµРЅРёСЏ СЂРµР°Р»РёР·РѕРІР°С‚СЊ РїРѕРґСЃС‡РµС‚ РєРѕР»РёС‡РµСЃС‚РІР° РІСЂР°С‰РµРЅРёР№ РґР»СЏ РІРѕСЃСЃС‚Р°РЅРѕРІР»РµРЅРёСЏ Р±Р°Р»Р°РЅСЃРёСЂРѕРІРєРё;
+4. РЎРѕС…СЂР°РЅРµРЅРёРµ РІ С„Р°Р№Р» Рё С‡С‚РµРЅРёРµ РёР· С„Р°Р№Р»Р° (С‚РµРєСЃС‚РѕРІС‹Р№);
+5. РЎСЂР°РІРЅРёС‚СЊ СЌС„С„РµРєС‚РёРІРЅРѕСЃС‚СЊ СЂРµР°Р»РёР·Р°С†РёРё СЃС‚СЂСѓРєС‚СѓСЂС‹ РґР°РЅРЅС‹С… СЃ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰РёРј СЃС‚Р°РЅРґР°СЂС‚РЅС‹Рј РєРѕРЅС‚РµР№РЅРµСЂРѕРј вЂ“ РІСЂРµРјРµРЅРЅС‹Рµ С‚РµСЃС‚С‹ РЅР° РЅРµРєРѕС‚РѕСЂС‹С… РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕСЃС‚СЏС… Р·РЅР°С‡РµРЅРёР№.
+*/
+
+/*
+1. РёРЅРІР°Р»РёРґР°С†РёСЏ РїРѕСЃР»Рµ СѓРґР°Р»РµРЅРёСЏ
+2. РєРѕРјРїР°СЂР°С‚РѕСЂ
 */
 
 template<typename T, class Compare = std::less<T>, class Allocator = std::allocator<T>>
 class avltree {
 
 	struct node {
-
-		T key; // значение
-		int height; // высота (для баланс-фактора)
-		node* parent; // родительский узел
-		node* left; // левый дочерний узел
-		node* right;// правый дочерний узел
-		int duplicates; // количество повторений (multiset)
-		bool is_nil; // является ли фиктивным узлом
-
-		node(const T& k = T(), int h = 1, node* p = nullptr, node* l = nullptr, node* r = nullptr)
-			: key(k), height(h), parent(p), left(l), right(r), duplicates(1), is_nil(false) { }
-
+		T key;				// Р·РЅР°С‡РµРЅРёРµ
+		int balance;		// СЂР°Р·РЅРѕСЃС‚СЊ РєРѕР»РёС‡РµСЃС‚РІР° РґРѕС‡РµСЂРЅРёС… СѓР·Р»РѕРІ РІ Р»РµРІРѕРј Рё РїСЂР°РІРѕРј РїРѕРґРґРµСЂРµРІСЊСЏС…
+		node* parent;		// СЂРѕРґРёС‚РµР»СЊСЃРєРёР№ СѓР·РµР»
+		node* left;			// Р»РµРІС‹Р№ РґРѕС‡РµСЂРЅРёР№ СѓР·РµР»
+		node* right;		// РїСЂР°РІС‹Р№ РґРѕС‡РµСЂРЅРёР№ СѓР·РµР»
+		bool is_nil;		// СЏРІР»СЏРµС‚СЃСЏ Р»Рё С„РёРєС‚РёРІРЅС‹Рј СѓР·Р»РѕРј
 	};
 
 	Compare cmp = Compare();
@@ -75,15 +74,15 @@ public:
 
 private:
 
-	/* В прошлой лабораторной я делал другую структуру дерева. В этой попробую реализовать так,
-	чтобы все листы ссылались на фиктивный */
+	/* Р’ РїСЂРѕС€Р»РѕР№ Р»Р°Р±РѕСЂР°С‚РѕСЂРЅРѕР№ СЏ РґРµР»Р°Р» РґСЂСѓРіСѓСЋ СЃС‚СЂСѓРєС‚СѓСЂСѓ РґРµСЂРµРІР°. Р’ СЌС‚РѕР№ РїРѕРїСЂРѕР±СѓСЋ СЂРµР°Р»РёР·РѕРІР°С‚СЊ С‚Р°Рє,
+	С‡С‚РѕР±С‹ РІСЃРµ Р»РёСЃС‚С‹ СЃСЃС‹Р»Р°Р»РёСЃСЊ РЅР° С„РёРєС‚РёРІРЅС‹Р№ */
 
-	// фиктивный узел
+	// С„РёРєС‚РёРІРЅС‹Р№ СѓР·РµР»
 	node* dummy;
 
 	size_t sz = 0;
 
-	// Создание фиктивной вершины
+	// РЎРѕР·РґР°РЅРёРµ С„РёРєС‚РёРІРЅРѕР№ РІРµСЂС€РёРЅС‹
 	inline node* make_dummy() {
 		dummy = Alc.allocate(1);
 
@@ -96,14 +95,14 @@ private:
 		std::allocator_traits<allocator_type>::construct(Alc, &(dummy->right));
 		dummy->right = dummy;
 
-		std::allocator_traits<allocator_type>::construct(Alc, &(dummy->height), 0);
+		std::allocator_traits<allocator_type>::construct(Alc, &(dummy->balance), 0);
 
 		std::allocator_traits<allocator_type>::construct(Alc, &(dummy->is_nil), true);
 
 		return dummy;
 	}
 
-	// Создание узла
+	// РЎРѕР·РґР°РЅРёРµ СѓР·Р»Р°
 	inline node* make_node(T&& val, node* p = nullptr, node* l = nullptr, node* r = nullptr) {
 		node* new_node = Alc.allocate(1);
 
@@ -118,16 +117,14 @@ private:
 
 		std::allocator_traits<allocator_type>::construct(Alc, &(new_node->data), std::forward<T>(val));
 
-		std::allocator_traits<allocator_type>::construct(Alc, &(new_node->height), new_node->parent->height + 1);
-
-		std::allocator_traits<allocator_type>::construct(Alc, &(new_node->duplicates), 1);
+		std::allocator_traits<allocator_type>::construct(Alc, &(new_node->balance), 0);
 
 		std::allocator_traits<allocator_type>::construct(Alc, &(new_node->is_nil), false);
 
 		return new_node;
 	}
 
-	// Удаление фиктивной вершины
+	// РЈРґР°Р»РµРЅРёРµ С„РёРєС‚РёРІРЅРѕР№ РІРµСЂС€РёРЅС‹
 	inline void delete_dummy(node* node) {
 		std::allocator_traits<allocator_type>::destroy(Alc, &(node->parent));
 		std::allocator_traits<allocator_type>::destroy(Alc, &(node->left));
@@ -135,89 +132,101 @@ private:
 		std::allocator_traits<allocator_type>::deallocate(Alc, node, 1);
 	}
 
-	// Удаление узла
+	// РЈРґР°Р»РµРЅРёРµ СѓР·Р»Р°
 	inline void delete_node(node* node) {
-		//  Тут удаляем поле данных (вызывается деструктор), а остальное удаляем так же, как и фиктивную
+		//  РўСѓС‚ СѓРґР°Р»СЏРµРј РїРѕР»Рµ РґР°РЅРЅС‹С… (РІС‹Р·С‹РІР°РµС‚СЃСЏ РґРµСЃС‚СЂСѓРєС‚РѕСЂ), Р° РѕСЃС‚Р°Р»СЊРЅРѕРµ СѓРґР°Р»СЏРµРј С‚Р°Рє Р¶Рµ, РєР°Рє Рё С„РёРєС‚РёРІРЅСѓСЋ
 		std::allocator_traits<allocator_type>::destroy(Alc, &(node->data));
 		delete_dummy(node);
 	}
 
 public:
 
-		class iterator
-		{
-			node* p;
+	class iterator
+	{
+		node* p;
 
-		public:
-			using iterator_category = std::bidirectional_iterator_tag;
-			using value_type = avltree::value_type;
-			using difference_type = avltree::difference_type;
-			using pointer = avltree::const_pointer;
-			using reference = avltree::const_reference;
+	public:
+		using iterator_category = std::bidirectional_iterator_tag;
+		using value_type = avltree::value_type;
+		using difference_type = avltree::difference_type;
+		using pointer = avltree::const_pointer;
+		using reference = avltree::const_reference;
 
-			iterator(node* n) : p(n) {}
+		iterator(node* n) : p(n) {}
 
-			reference operator*()  const noexcept {
-				return p->data;
+		reference operator*()  const noexcept {
+			return p->data;
+		}
+
+		node* operator->() const noexcept {
+			return p;
+		}
+
+		iterator& operator++() noexcept {
+			if (p->right->is_nil) {
+				node* temp;
+				while (!(temp = p->parent)->is_nil && temp->right == p) {
+					p = temp;
+				}
+
+				p = temp;
 			}
-
-			node* operator->() const noexcept {
-				return p;
-			}
-
-			iterator& operator++() noexcept {
-				/* TODO */
-			}
-
-			iterator& operator--() noexcept {
-				/* TODO */
-			}
-
-			iterator& operator++(int) noexcept {
-				iterator temp = *this;
-				++*this;
-				return temp;
-			}
-
-			iterator& operator--(int) noexcept {
-				iterator temp = *this;
-				--*this;
-				return temp;
-			}
-
-			//  Поиск «самого левого» элемента
-			iterator GetMin() {
-				while (p->left && !p->left->is_nil) {
+			else {
+				p = p->right;
+				while (p->left) {
 					p = p->left;
 				}
-				return p;
 			}
+			return *this;
+		}
 
-			//  Поиск «самого правого» элемента
-			iterator GetMax() {
-				while (p->right && !p->right->is_nil) {
+		iterator& operator--() noexcept {
+			if (p->left->is_nil) {
+				node* temp;
+				while (!(temp = p->parent)->is_nil && temp->left == p) {
+					p = temp;
+				}
+
+				p = temp;
+			}
+			else {
+				p = p->left;
+				while (p->right) {
 					p = p->right;
 				}
-				return p;
 			}
+			return *this;
+		}
 
-			bool      operator!=(const iterator& other) const {
-				return p != other.p;
-			}
+		iterator& operator++(int) noexcept {
+			iterator temp = *this;
+			++*this;
+			return temp;
+		}
 
-			bool      operator==(const iterator& other) const {
-				return p == other.p;
-			}
+		iterator& operator--(int) noexcept {
+			iterator temp = *this;
+			--*this;
+			return temp;
+		}
 
-			//  Эти операции не допускаются между прямыми и обратными итераторами
-			const iterator& operator=(const reverse_iterator& it) = delete;
-			bool operator==(const reverse_iterator& it) = delete;
-			bool operator!=(const reverse_iterator& it) = delete;
-			iterator(const reverse_iterator& it) = delete;
-		};
+		bool operator!=(const iterator& other) const {
+			return p != other.p;
+		}
 
-		using const_iterator = iterator;
-		using reverse_iterator = std::reverse_iterator<iterator>;
-		using const_reverse_iterator = std::reverse_iterator<const_iterator>;
+		bool operator==(const iterator& other) const {
+			return p == other.p;
+		}
+
+		//  Р­С‚Рё РѕРїРµСЂР°С†РёРё РЅРµ РґРѕРїСѓСЃРєР°СЋС‚СЃСЏ РјРµР¶РґСѓ РїСЂСЏРјС‹РјРё Рё РѕР±СЂР°С‚РЅС‹РјРё РёС‚РµСЂР°С‚РѕСЂР°РјРё
+		const iterator& operator=(const reverse_iterator& it) = delete;
+		bool operator==(const reverse_iterator& it) = delete;
+		bool operator!=(const reverse_iterator& it) = delete;
+		iterator(const reverse_iterator& it) = delete;
+	};
+
+	using const_iterator = iterator;
+	using reverse_iterator = std::reverse_iterator<iterator>;
+	using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
 };
