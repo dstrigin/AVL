@@ -141,6 +141,8 @@ private:
 
 public:
 
+	/* Итератор */
+
 	class iterator
 	{
 		node* p;
@@ -173,7 +175,7 @@ public:
 			}
 			else {
 				p = p->right;
-				while (p->left) {
+				while (!p->left->is_nil) {
 					p = p->left;
 				}
 			}
@@ -181,17 +183,22 @@ public:
 		}
 
 		iterator& operator--() noexcept {
-			if (p->left->is_nil) {
+			if (p->is_nil) {
+				p = p->right;
+			}
+			else if (p->left->is_nil) {
 				node* temp;
 				while (!(temp = p->parent)->is_nil && temp->left == p) {
 					p = temp;
 				}
 
-				p = temp;
+				if (!p->is_nil) {
+					p = temp;
+				}
 			}
 			else {
 				p = p->left;
-				while (p->right) {
+				while (!p->right->is_nil) {
 					p = p->right;
 				}
 			}
@@ -225,8 +232,52 @@ public:
 		iterator(const reverse_iterator& it) = delete;
 	};
 
+	/* работа с итераторами в дереве */
+
 	using const_iterator = iterator;
 	using reverse_iterator = std::reverse_iterator<iterator>;
 	using const_reverse_iterator = std::reverse_iterator<const_iterator>;
+
+	iterator begin() const noexcept {
+		return iterator(dummy->left);
+	}
+
+	iterator end() const noexcept {
+		return iterator(dummy);
+	}
+
+	reverse_iterator rbegin() const	noexcept {
+		return reverse_iterator(dummy->right);
+	}
+
+	reverse_iterator rend() const noexcept {
+		return reverse_iterator(dummy);
+	}
+
+	/* создание дерева */
+	
+	avltree(Compare comparator = Compare(), allocator_type alloc = allocator_type())
+		: dummy(make_dummy()), cmp(comparator), Alc(alloc) {}
+
+
+
+	/* остальные методы */
+
+	allocator_type get_allocator() const noexcept { return Alc; }
+
+	value_compare value_comp() const noexcept { return cmp; }
+
+	inline bool empty() const noexcept {
+		return sz == 0;
+	}
+
+	size_type size() const {
+		return sz;
+	}
+
+	void swap(avltree& other) noexcept {
+		std::swap(dummy, other.dummy);
+		std::swap(sz, other.sz);
+	}
 
 };
