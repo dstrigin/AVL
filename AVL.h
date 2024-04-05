@@ -6,6 +6,7 @@
 #include <memory_resource>
 #include <initializer_list>
 #include <exception>
+#include <iomanip>
 
 /*
 Структуру данных оформить в виде контейнера, с поддержкой итераторов соответствующей категории.
@@ -40,8 +41,8 @@ template<typename T, class Compare = std::less<T>, class Allocator = std::alloca
 class avltree {
 
 	struct node {
-		T key;				// значение
-		int balance;		// разность количества дочерних узлов в левом и правом поддеревьях
+		T data;				// значение
+		int balance;		// разность количества дочерних узлов в правом и левом поддеревьях
 		node* parent;		// родительский узел
 		node* left;			// левый дочерний узел
 		node* right;		// правый дочерний узел
@@ -259,8 +260,6 @@ public:
 	avltree(Compare comparator = Compare(), allocator_type alloc = allocator_type())
 		: dummy(make_dummy()), cmp(comparator), Alc(alloc) {}
 
-
-
 	/* остальные методы */
 
 	allocator_type get_allocator() const noexcept { return Alc; }
@@ -278,6 +277,135 @@ public:
 	void swap(avltree& other) noexcept {
 		std::swap(dummy, other.dummy);
 		std::swap(sz, other.sz);
+	}
+
+	node* get_root() {
+		return dummy->parent;
+	}
+
+	void print(node* root, int indent = 0) {
+		if (root == nullptr || root->is_nil)
+			return;
+
+		print(root->right, indent + 4);
+
+		if (indent > 0)
+			std::cout << std::setw(indent) << ' ';
+		std::cout << root->data << std::endl;
+
+		print(root->left, indent + 4);
+	}
+
+private:
+
+	void left_rotation(node* x, node* z) {
+		node* n = z->left;
+		x->right = n;
+		if (!n->is_nil) {
+			n->parent = x;
+		}
+		z->left = x;
+		x->parent = z;
+		/* разобраться с balance */
+	}
+
+	void right_rotation(node* x, node* z) {
+		node* n = z->right;
+		x->left = n;
+		if (!n->is_nil) {
+			n->parent = x;
+		}
+		z->right = x;
+		x->parent = z;
+		/* разобраться с balance */
+	}
+
+	void left_right_rotation(node* x, node* z) {
+
+	}
+
+	void right_left_rotation(node* x, node* z) {
+
+	}
+
+public:
+	
+	std::pair<iterator, bool> insert(const T& value) {
+		if (sz == 0) {
+
+			node* n = make_node(0, dummy, dummy, dummy);
+			n->data = value;
+			dummy->right = dummy->left = dummy->parent = n;
+			sz++;
+			return { dummy->left, true };
+
+		}
+		else {
+
+			node* to = dummy->parent;
+
+			while (true) {
+
+				if (cmp(value, to->data) && !to->left->is_nil) {
+					to = to->left;
+				}
+				else if (value > to->data && !to->right->is_nil) {
+					to = to->right;
+				}
+				else if (value == to->data) {
+					node* n = make_node(0, to, to->left, dummy);
+					n->data = value;
+
+					if (!to->left->is_nil) {
+						to->left->parent = n;
+					}
+
+					to->left = n;
+
+					if (dummy->left == to) {
+						dummy->left = n;
+					}
+
+					return { iterator(n), true };
+
+				}
+				else if (cmp(value, to->data)) {
+					
+					node* n = make_node(0, to, dummy, dummy);
+					n->data = value;
+
+					to->left = n;
+
+					if (dummy->left == to) {
+						dummy->left = n;
+					}
+
+					to->balance--;
+
+					return { iterator(n), true };
+
+				}
+				else {
+
+					node* n = make_node(0, to, dummy, dummy);
+					n->data = value;
+
+					to->right = n;
+
+					if (dummy->right == to) {
+						dummy->right = n;
+					}
+
+					to->balance++;
+
+					return { iterator(n), true };
+
+				}
+			
+			}
+
+		}
+
 	}
 
 };
