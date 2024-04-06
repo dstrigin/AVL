@@ -1,14 +1,13 @@
 #include "AVL.h"
 #include <iostream>
+#include <vector>
 
 int main() {
 	avltree<int> t;
 
-	t.insert(5);
-	t.insert(3);
-	t.insert(4);
-	t.insert(8);
-	t.insert(6);
+	std::vector<int> v{ 1, 2, 3, 4, 5, 6, 7 };
+
+	t.insert(v.begin(), v.end());
 
 	for (auto it = t.begin(); it != t.end(); ++it) {
 		std::cout << *it << " ";
@@ -22,6 +21,10 @@ int main() {
 	std::cout << "\n\n";
 
 	t.print_balance(r);
+
+	std::cout << "\n\n";
+
+	std::cout << *t.find(8);
 
 	/*std::cout << "\n\n";
 

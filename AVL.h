@@ -256,20 +256,89 @@ public:
 	}
 
 	/* создание дерева */
-	
+
 	avltree(Compare comparator = Compare(), allocator_type alloc = allocator_type())
 		: dummy(make_dummy()), cmp(comparator), Alc(alloc) {}
 
 	template <class InputIterator>
 	avltree(InputIterator first, InputIterator last, Compare comparator = Compare(), allocator_type alloc = allocator_type());
-	avltree(Compare comparator = Compare(), allocator_type alloc = allocator_type());
-	avltree(const std::initializer_list<T>& il);
-	avltree(const avltree& tree);
+
+	avltree(const std::initializer_list<T>& il) : dummy(make_dummy) {
+		for (const T& element : il) {
+			insert(element);
+		}
+	}
+
+	avltree(const avltree& tree) {
+		//  Размер задаём
+		sz = tree.sz;
+		if (tree.empty()) return;
+
+		dummy->parent = recur_copy_tree(tree.dummy->parent, tree.dummy);
+
+		//  Осталось установить min и max
+		node* min = dummy->parent;
+		while (!min->is_nil) {
+			min = min->left;
+		}
+		dummy->left = min;
+
+		node* max;
+		while (!max->is_nil) {
+			max = max->right;
+		}
+		dummy->right = max;
+	}
+
+private:
+	//  Рекурсивное копирование дерева
+	node* recur_copy_tree(node* source, const node* source_dummy)
+	{
+		//  Сначала создаём дочерние поддеревья
+		node* left_sub_tree;
+		if (!source->left->is_nil)
+			left_sub_tree = recur_copy_tree(source->left, source_dummy);
+		else
+			left_sub_tree = dummy;
+
+		node* right_sub_tree;
+		if (!source->right->is_nil)
+			right_sub_tree = recur_copy_tree(source->right, source_dummy);
+		else
+			right_sub_tree = dummy;
+
+		//  Теперь создаём собственный узел
+		node* current = make_node(source->data, dummy, left_sub_tree, right_sub_tree);
+		//  Устанавливаем родителей
+		if (!source->right->is_nil)
+			current->right->parent = current;
+		if (!source->left->is_nil)
+			current->left->parent = current;
+		//  Ну и всё, можно возвращать
+		return current;
+	}
+
+public:
 
 	/* остальные методы */
 
-	const avltree& operator=(const avltree& other);
-	const avltree& operator=(avltree&& other);
+	const avltree& operator=(const avltree& other) {
+		if (this == &other) {
+			return *this;
+		}
+
+		avltree tmp{ other };
+		swap(tmp);
+
+		return *this;
+	}
+
+	const avltree& operator=(avltree&& other) {
+		std::swap(dummy, other.dummy);
+		std::swap(sz, other.sz);
+		other.clear();
+		return *this;
+	}
 
 	allocator_type get_allocator() const noexcept { return Alc; }
 
@@ -321,7 +390,7 @@ public:
 private:
 
 	void left_rotation(node* x, node* z) {
-		
+
 		node* n = z->left;
 		x->right = n;
 		if (!n->is_nil) {
@@ -342,13 +411,13 @@ private:
 
 		z->left = x;
 		x->parent = z;
-		
+
 		z->balance--;
 		x->balance -= 2;
 	}
 
 	void right_rotation(node* x, node* z) {
-		
+
 		node* n = z->right;
 		x->left = n;
 		if (!n->is_nil) {
@@ -369,13 +438,13 @@ private:
 
 		z->right = x;
 		x->parent = z;
-		
+
 		z->balance++;
 		x->balance += 2;
 	}
 
 	void left_right_rotation(node* x, node* z) {
-		
+
 		node* n = z->right;
 		node* t = n->left;
 		z->right = t;
@@ -425,15 +494,15 @@ private:
 	}
 
 	void right_left_rotation(node* x, node* z) {
-		
+
 		node* n = z->left;
 		node* t = n->right;
 		z->left = t;
-		
+
 		if (!t->is_nil) {
 			t->parent = z;
 		}
-		
+
 		n->right = z;
 		z->parent = n;
 
@@ -475,7 +544,7 @@ private:
 	}
 
 	void fixup(node* n) {
-		
+
 		if (n->is_nil) {
 			return;
 		}
@@ -496,7 +565,7 @@ private:
 	}
 
 public:
-	
+
 	std::pair<iterator, bool> insert(const T& value) {
 		if (sz == 0) {
 
@@ -537,7 +606,7 @@ public:
 
 				}
 				else if (cmp(value, to->data)) {
-					
+
 					node* n = make_node(0, to, dummy, dummy);
 					n->data = value;
 
@@ -589,15 +658,94 @@ public:
 	}
 
 	template <class InputIterator>
-	void insert(InputIterator first, InputIterator last);
+	void insert(InputIterator first, InputIterator last) {
+		while (first != last) {
+			insert(*first++);
+		}
+	}
+
 	iterator insert(const_iterator position, const value_type& x);
 
-	iterator find(const value_type& value) const;
+	iterator find(const value_type& value) const {
 
-	iterator lower_bound(const value_type& key);
-	const_iterator lower_bound(const value_type& key) const;
-	iterator upper_bound(const value_type& key);
-	const_iterator upper_bound(const value_type& key) const;
+		iterator root(dummy->parent);
+
+		while (!root->is_nil) {
+			if (value == *root) {
+				return root;
+			}
+			if (cmp(value, *root)) {
+				--root;
+			}
+			else if (cmp(*root, value)) {
+				++root;
+			}
+		}
+
+		return dummy;
+	}
+
+	iterator lower_bound(const value_type& key) {
+
+		iterator root(dummy->parent);
+
+		while (!root->is_nil) {
+			if (cmp(key, *root)) {
+				--root;
+			}
+			else if (key == *root) {
+				return root;
+			}
+			else {
+
+				while (cmp(*root, key)) {
+					++root;
+				}
+
+				return root;
+			}
+		}
+
+		return root;
+
+	}
+
+	const_iterator lower_bound(const value_type& key) const {
+		return const_iterator(const_cast<avltree*>(this)->lower_bound(key));
+	}
+
+	iterator upper_bound(const value_type& key) {
+
+		iterator root(dummy->parent);
+
+		while (!root->is_nil) {
+			if (cmp(key, *root)) {
+				--root;
+			}
+			else if (key == *root) {
+				return ++root;
+			}
+			else {
+
+				while (cmp(*root, key)) {
+					++root;
+				}
+
+				if (*root == key) {
+					return ++root;
+				}
+				else {
+					return root;
+				}
+			}
+		}
+
+		return root;
+	}
+
+	const_iterator upper_bound(const value_type& key) const {
+		return const_iterator(const_cast<avltree*>(this)->upper_bound(key));
+	}
 
 	size_type count(const value_type& key) const;
 	std::pair<const_iterator, const_iterator> equal_range(const value_type& key) const;
@@ -606,12 +754,12 @@ public:
 	size_type erase(const value_type& elem);
 	iterator erase(const_iterator first, const_iterator last);
 
-	bool operator==(const BinarySearchTree<T>& other);
-	bool operator!=(const BinarySearchTree<T>& other);
-	bool operator>=(const BinarySearchTree<T>& other);
-	bool operator<=(const BinarySearchTree<T>& other);
-	bool operator> (const BinarySearchTree<T>& other);
-	bool operator< (const BinarySearchTree<T>& other);
+	bool operator==(const avltree& other);
+	bool operator!=(const avltree& other);
+	bool operator>=(const avltree& other);
+	bool operator<=(const avltree& other);
+	bool operator> (const avltree& other);
+	bool operator< (const avltree& other);
 
 	//  Очистка дерева (без удаления фиктивной вершины)
 	void clear() {
