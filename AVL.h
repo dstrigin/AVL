@@ -400,6 +400,19 @@ private:
 		n->right = x;
 		x->parent = n;
 
+		if (n->balance == 0) {
+			x->balance = z->balance = 0;
+		}
+		else if (n->balance > 0) {
+			x->balance = -1;
+			z->balance = 0;
+		}
+		else {
+			x->balance = 0;
+			z->balance = 1;
+		}
+		n->balance = 0;
+
 	}
 
 	void right_left_rotation(node* x, node* z) {
@@ -436,6 +449,19 @@ private:
 
 		n->left = x;
 		x->parent = n;
+
+		if (n->balance == 0) {
+			x->balance = z->balance = 0;
+		}
+		else if (n->balance > 0) {
+			x->balance = -1;
+			z->balance = 0;
+		}
+		else {
+			x->balance = 0;
+			z->balance = 1;
+		}
+		n->balance = 0;
 
 	}
 
@@ -554,6 +580,32 @@ public:
 
 		}
 
+	}
+
+	//  Очистка дерева (без удаления фиктивной вершины)
+	void clear() {
+		Free_nodes(dummy->parent);
+		sz = 0;
+		dummy->parent = dummy->left = dummy->right = dummy;
+	}
+
+private:
+	//  Рекурсивное удаление узлов дерева, не включая фиктивную вершину
+	void Free_nodes(node* n) {
+		if (n == nullptr) {
+			return;
+		}
+		if (n != dummy) {
+			Free_nodes(n->left);
+			Free_nodes(n->right);
+			delete_node(n);
+		}
+	}
+
+public:
+	~avltree() {
+		clear(); // рекурсивный деструктор
+		delete_dummy(dummy);
 	}
 
 };
