@@ -260,7 +260,16 @@ public:
 	avltree(Compare comparator = Compare(), allocator_type alloc = allocator_type())
 		: dummy(make_dummy()), cmp(comparator), Alc(alloc) {}
 
+	template <class InputIterator>
+	avltree(InputIterator first, InputIterator last, Compare comparator = Compare(), allocator_type alloc = allocator_type());
+	avltree(Compare comparator = Compare(), allocator_type alloc = allocator_type());
+	avltree(const std::initializer_list<T>& il);
+	avltree(const avltree& tree);
+
 	/* остальные методы */
+
+	const avltree& operator=(const avltree& other);
+	const avltree& operator=(avltree&& other);
 
 	allocator_type get_allocator() const noexcept { return Alc; }
 
@@ -279,11 +288,11 @@ public:
 		std::swap(sz, other.sz);
 	}
 
-	node* get_root() {
+	node* get_root() const {
 		return dummy->parent;
 	}
 
-	void print(node* root, int indent = 0) {
+	void print(node* root, int indent = 0) const {
 		if (root == nullptr || root->is_nil)
 			return;
 
@@ -296,7 +305,7 @@ public:
 		print(root->left, indent + 4);
 	}
 
-	void print_balance(node* root, int indent = 0) {
+	void print_balance(node* root, int indent = 0) const {
 		if (root == nullptr || root->is_nil)
 			return;
 
@@ -575,12 +584,34 @@ public:
 					return { iterator(n), true };
 
 				}
-			
 			}
-
 		}
-
 	}
+
+	template <class InputIterator>
+	void insert(InputIterator first, InputIterator last);
+	iterator insert(const_iterator position, const value_type& x);
+
+	iterator find(const value_type& value) const;
+
+	iterator lower_bound(const value_type& key);
+	const_iterator lower_bound(const value_type& key) const;
+	iterator upper_bound(const value_type& key);
+	const_iterator upper_bound(const value_type& key) const;
+
+	size_type count(const value_type& key) const;
+	std::pair<const_iterator, const_iterator> equal_range(const value_type& key) const;
+
+	iterator erase(iterator elem);
+	size_type erase(const value_type& elem);
+	iterator erase(const_iterator first, const_iterator last);
+
+	bool operator==(const BinarySearchTree<T>& other);
+	bool operator!=(const BinarySearchTree<T>& other);
+	bool operator>=(const BinarySearchTree<T>& other);
+	bool operator<=(const BinarySearchTree<T>& other);
+	bool operator> (const BinarySearchTree<T>& other);
+	bool operator< (const BinarySearchTree<T>& other);
 
 	//  Очистка дерева (без удаления фиктивной вершины)
 	void clear() {
