@@ -296,36 +296,168 @@ public:
 		print(root->left, indent + 4);
 	}
 
+	void print_balance(node* root, int indent = 0) {
+		if (root == nullptr || root->is_nil)
+			return;
+
+		print_balance(root->right, indent + 4);
+
+		if (indent > 0)
+			std::cout << std::setw(indent) << ' ';
+		std::cout << root->balance << std::endl;
+
+		print_balance(root->left, indent + 4);
+	}
+
 private:
 
 	void left_rotation(node* x, node* z) {
+		
 		node* n = z->left;
 		x->right = n;
 		if (!n->is_nil) {
 			n->parent = x;
 		}
+
+		z->parent = x->parent;
+
+		if (x->parent == dummy) {
+			dummy->parent = z;
+		}
+		else if (x == x->parent->left) {
+			x->parent->left = z;
+		}
+		else {
+			x->parent->right = z;
+		}
+
 		z->left = x;
 		x->parent = z;
-		/* разобраться с balance */
+		
+		z->balance--;
+		x->balance -= 2;
 	}
 
 	void right_rotation(node* x, node* z) {
+		
 		node* n = z->right;
 		x->left = n;
 		if (!n->is_nil) {
 			n->parent = x;
 		}
+
+		z->parent = x->parent;
+
+		if (x->parent == dummy) {
+			dummy->parent = z;
+		}
+		else if (x == x->parent->left) {
+			x->parent->left = z;
+		}
+		else {
+			x->parent->right = z;
+		}
+
 		z->right = x;
 		x->parent = z;
-		/* разобраться с balance */
+		
+		z->balance++;
+		x->balance += 2;
 	}
 
 	void left_right_rotation(node* x, node* z) {
+		
+		node* n = z->right;
+		node* t = n->left;
+		z->right = t;
+
+		if (!t->is_nil) {
+			t->parent = z;
+		}
+
+		n->left = z;
+		z->parent = n;
+
+		node* t2 = n->right;
+
+		x->left = t2;
+		if (!t2->is_nil) {
+			t2->parent = x;
+		}
+
+		n->parent = x->parent;
+
+		if (x->parent == dummy) {
+			dummy->parent = n;
+		}
+		else if (x == x->parent->left) {
+			x->parent->left = n;
+		}
+		else {
+			x->parent->right = n;
+		}
+
+		n->right = x;
+		x->parent = n;
 
 	}
 
 	void right_left_rotation(node* x, node* z) {
+		
+		node* n = z->left;
+		node* t = n->right;
+		z->left = t;
+		
+		if (!t->is_nil) {
+			t->parent = z;
+		}
+		
+		n->right = z;
+		z->parent = n;
 
+		node* t2 = n->left;
+
+		x->right = t2;
+		if (!t2->is_nil) {
+			t2->parent = x;
+		}
+
+		n->parent = x->parent;
+
+		if (x->parent == dummy) {
+			dummy->parent = n;
+		}
+		else if (x == x->parent->left) {
+			x->parent->left = n;
+		}
+		else {
+			x->parent->right = n;
+		}
+
+		n->left = x;
+		x->parent = n;
+
+	}
+
+	void fixup(node* n) {
+		
+		if (n->is_nil) {
+			return;
+		}
+
+		if (n->balance == -2) {
+			right_rotation(n, n->left);
+		}
+		if (n->balance == 2) {
+			left_rotation(n, n->right);
+		}
+		if (n->balance == 1 && n->parent->balance < n->balance && !n->parent->is_nil) {
+			left_right_rotation(n->parent, n);
+		}
+		if (n->balance == -1 && n->parent->balance > n->balance && !n->parent->is_nil) {
+			right_left_rotation(n->parent, n);
+		}
+		fixup(n->parent);
 	}
 
 public:
@@ -380,7 +512,15 @@ public:
 						dummy->left = n;
 					}
 
-					to->balance--;
+					while (!to->is_nil) {
+						to->balance--;
+						if (to->balance == -2) {
+							break;
+						}
+						to = to->parent;
+					}
+
+					fixup(n->parent);
 
 					return { iterator(n), true };
 
@@ -396,7 +536,15 @@ public:
 						dummy->right = n;
 					}
 
-					to->balance++;
+					while (!to->is_nil) {
+						to->balance++;
+						if (to->balance == 2) {
+							break;
+						}
+						to = to->parent;
+					}
+
+					fixup(n->parent);
 
 					return { iterator(n), true };
 
