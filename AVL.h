@@ -157,12 +157,16 @@ public:
 
 		iterator(node* n) : p(n) {}
 
-		reference operator*()  const noexcept {
+		reference operator*() const noexcept {
 			return p->data;
 		}
 
 		node* operator->() const noexcept {
 			return p;
+		}
+
+		node* _node() {
+			return this->p;
 		}
 
 		iterator& operator++() noexcept {
@@ -778,10 +782,67 @@ public:
 
 		return res;
 	}
+	
 	std::pair<const_iterator, const_iterator> equal_range(const value_type& key) const;
 
-	iterator erase(iterator elem);
-	size_type erase(const value_type& elem);
+	iterator erase(iterator elem) {
+
+		if (elem->is_nil) {
+			return end();
+		}
+
+		
+		if (elem->left->is_nil && elem->right->is_nil) { // удаляем лист
+			if (elem->parent->is_nil) { // если в дереве 1 элемент
+				dummy->parent = dummy->left = dummy->right = dummy;
+				delete_node(elem._node());
+				return end();
+			}
+			else { // в противном случае 
+				
+				node* parent = elem->parent;
+
+				if (elem._node() == parent->left) { // если удаляемый лист в левом поддереве
+					
+					parent->left = dummy;
+
+					if (dummy->left == elem._node()) {
+						dummy->left = parent->left;
+					}
+
+					iterator res(elem);
+					++res;
+
+					iterator temp(parent);
+
+					while (!parent->is_nil) {
+						parent->balance++;
+						if (parent->balance == 2) {
+							break;
+						}
+						parent = parent->parent;
+					}
+
+					fixup(temp._node());
+
+					delete_node(elem._node());
+				}
+			}
+		}
+
+	}
+
+	size_type erase(const value_type& elem) {
+		iterator it = find(elem);
+		if (!it->is_nil) {
+			erase(it);
+			return 1;
+		}
+		else {
+			return 0;
+		}
+	}
+
 	iterator erase(const_iterator first, const_iterator last);
 
 private:

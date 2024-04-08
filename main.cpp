@@ -3,6 +3,7 @@
 #include <vector>
 
 int main() {
+
 	avltree<int> t;
 
 	std::vector<int> v{ 1, 2, 3, 4, 5, 6, 7 };
@@ -24,7 +25,27 @@ int main() {
 
 	std::cout << "\n\n";
 
-	std::cout << *t.find(8);
+	t.erase(1);
+
+	t.print(r);
+
+	std::cout << "\n\n";
+
+	t.print_balance(r);
+
+	std::cout << "\n\n";
+
+	t.erase(5);
+
+	r = t.get_root();
+
+	t.print(r);
+
+	std::cout << "\n\n";
+
+	t.print_balance(r);
+
+	std::cout << "\n\n";
 
 	/*std::cout << "\n\n";
 
