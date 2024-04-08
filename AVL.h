@@ -602,6 +602,16 @@ public:
 						dummy->left = n;
 					}
 
+					while (!to->is_nil) {
+						to->balance--;
+						if (to->balance == -2) {
+							break;
+						}
+						to = to->parent;
+					}
+
+					fixup(n->parent);
+
 					return { iterator(n), true };
 
 				}
@@ -671,14 +681,14 @@ public:
 		iterator root(dummy->parent);
 
 		while (!root->is_nil) {
-			if (value == *root) {
-				return root;
-			}
 			if (cmp(value, *root)) {
 				--root;
 			}
 			else if (cmp(*root, value)) {
 				++root;
+			}
+			else {
+				return iterator(root);
 			}
 		}
 
@@ -747,19 +757,104 @@ public:
 		return const_iterator(const_cast<avltree*>(this)->upper_bound(key));
 	}
 
-	size_type count(const value_type& key) const;
+	size_type count(const value_type& key) const {
+		size_type res{ 0 };
+
+		iterator it = find(key);
+
+		if (it != end()) {
+			res++;
+
+			iterator temp_left(it);
+			iterator temp_right(it);
+
+			while (*(--temp_left) == key) {
+				res++;
+			}
+			while (*(++temp_right) == key) {
+				res++;
+			}
+		}
+
+		return res;
+	}
 	std::pair<const_iterator, const_iterator> equal_range(const value_type& key) const;
 
 	iterator erase(iterator elem);
 	size_type erase(const value_type& elem);
 	iterator erase(const_iterator first, const_iterator last);
 
-	bool operator==(const avltree& other);
-	bool operator!=(const avltree& other);
-	bool operator>=(const avltree& other);
-	bool operator<=(const avltree& other);
-	bool operator> (const avltree& other);
-	bool operator< (const avltree& other);
+private:
+	// вспомогательное для сравнения
+
+	bool equals(node* curr, node* other) const {
+		if (curr->is_nil && other->is_nil) {
+			return true;
+		}
+		if (!curr->is_nil && !other->is_nil) {
+			return curr->data == other->data
+				&& equals(curr->left, other->left)
+				&& equals(curr->right, other->right);
+		}
+		return false;
+	}
+
+	bool less(node* curr, node* other) const {
+		if (curr->is_nil && other->is_nil) {
+			return true;
+		}
+		else if (curr->is_nil && !other->is_nil) {
+			return true;
+		}
+		else if (!curr->is_nil && other->is_nil) {
+			return false;
+		}
+		else {
+			return curr->data < other->data
+				&& less(curr->left, other->left)
+				&& less(curr->right, other->right);
+		}
+		return false;
+	}
+
+	bool less_equal(node* curr, node* other) const {
+		if (curr->is_nil && other->is_nil) {
+			return true;
+		}
+		if (!curr->is_nil && !other->is_nil) {
+			return curr->data <= other->data
+				&& less_equal(curr->left, other->left)
+				&& less_equal(curr->right, other->right);
+		}
+		return false;
+	}
+
+public:
+	// Операции сравнения
+
+	bool operator==(const avltree& other) {
+		return equals(dummy->parent, other.dummy->parent);
+	}
+
+	bool operator!=(const avltree& other) {
+		return !(*this == other);
+	}
+
+	bool operator>=(const avltree& other) {
+		return !(*this < other);
+	}
+	
+	bool operator<=(const avltree& other) {
+		return less_equal(dummy->parent, other.dummy->parent);
+	}
+	
+	bool operator> (const avltree& other) {
+		return !(*this <= other);
+	}
+	
+	bool operator< (const avltree& other) {
+		return less(dummy->parent, other.dummy->parent);
+	}
 
 	//  Очистка дерева (без удаления фиктивной вершины)
 	void clear() {
