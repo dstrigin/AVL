@@ -9,12 +9,7 @@ int main() {
 	std::vector<int> v{ 1, 2, 3, 4, 5, 6, 7 };
 
 	t.insert(v.begin(), v.end());
-
-	for (auto it = t.begin(); it != t.end(); ++it) {
-		std::cout << *it << " ";
-	}
-	std::cout << "\n\n";
-
+	
 	auto r = t.get_root();
 
 	t.print(r);
@@ -25,7 +20,12 @@ int main() {
 
 	std::cout << "\n\n";
 
-	t.erase(1);
+	for (auto it = t.begin(); it != t.end(); ++it) {
+		std::cout << *it << " ";
+	}
+	std::cout << "\n\n";
+
+	/*auto r = t.get_root();
 
 	t.print(r);
 
@@ -33,19 +33,29 @@ int main() {
 
 	t.print_balance(r);
 
-	std::cout << "\n\n";
+	std::cout << "\n\n";*/
 
-	t.erase(5);
+	//t.erase(1);
 
-	r = t.get_root();
+	//t.print(r);
 
-	t.print(r);
+	//std::cout << "\n\n";
 
-	std::cout << "\n\n";
+	//t.print_balance(r);
 
-	t.print_balance(r);
+	//std::cout << "\n\n";
 
-	std::cout << "\n\n";
+	//t.erase(5);
+
+	//r = t.get_root();
+
+	//t.print(r);
+
+	//std::cout << "\n\n";
+
+	//t.print_balance(r);
+
+	//std::cout << "\n\n";
 
 	/*std::cout << "\n\n";
 

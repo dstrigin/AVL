@@ -559,10 +559,10 @@ private:
 		if (n->balance == 2) {
 			left_rotation(n, n->right);
 		}
-		if (n->balance == 1 && n->parent->balance < n->balance && !n->parent->is_nil) {
+		if (n->balance == 1 && n->parent->balance == -2) {
 			left_right_rotation(n->parent, n);
 		}
-		if (n->balance == -1 && n->parent->balance > n->balance && !n->parent->is_nil) {
+		if (n->balance == -1 && n->parent->balance == 2) {
 			right_left_rotation(n->parent, n);
 		}
 		fixup(n->parent);
@@ -606,11 +606,19 @@ public:
 						dummy->left = n;
 					}
 
+					node* temp = n;
+
 					while (!to->is_nil) {
-						to->balance--;
+						if (temp == to->left) {
+							to->balance--;
+						}
+						else {
+							to->balance++;
+						}
 						if (to->balance == -2) {
 							break;
 						}
+						temp = to;
 						to = to->parent;
 					}
 
@@ -630,11 +638,19 @@ public:
 						dummy->left = n;
 					}
 
+					node* temp = n;
+
 					while (!to->is_nil) {
-						to->balance--;
-						if (to->balance == -2) {
+						if (temp == to->left) {
+							to->balance--;
+						}
+						else {
+							to->balance++;
+						}
+						if (to->balance == -2 || to->balance == 2) {
 							break;
 						}
+						temp = temp->parent;
 						to = to->parent;
 					}
 
@@ -654,11 +670,19 @@ public:
 						dummy->right = n;
 					}
 
+					node* temp = n;
+
 					while (!to->is_nil) {
-						to->balance++;
-						if (to->balance == 2) {
+						if (temp == to->left) {
+							to->balance--;
+						}
+						else {
+							to->balance++;
+						}
+						if (to->balance == -2 || to->balance == 2) {
 							break;
 						}
+						temp = temp->parent;
 						to = to->parent;
 					}
 
