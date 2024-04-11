@@ -366,6 +366,12 @@ public:
 	}
 
 	void print(node* root, int indent = 0) const {
+
+		if (sz == 0) {
+			std::cout << "<empty tree>";
+			return;
+		}
+
 		if (root == nullptr || root->is_nil)
 			return;
 
@@ -379,6 +385,12 @@ public:
 	}
 
 	void print_balance(node* root, int indent = 0) const {
+
+		if (sz == 0) {
+			std::cout << "<empty tree>";
+			return;
+		}
+
 		if (root == nullptr || root->is_nil)
 			return;
 
@@ -586,12 +598,18 @@ public:
 
 			while (true) {
 
+				// двигаемся по дереву
+
 				if (cmp(value, to->data) && !to->left->is_nil) {
 					to = to->left;
 				}
-				else if (value > to->data && !to->right->is_nil) {
+
+				else if (cmp(to->data, value) && !to->right->is_nil) {
 					to = to->right;
 				}
+
+				// если встретили узел с таким же значением, дублируем
+
 				else if (value == to->data) {
 					node* n = make_node(0, to, to->left, dummy);
 					n->data = value;
@@ -622,11 +640,14 @@ public:
 						to = to->parent;
 					}
 
+					sz++;
+
 					fixup(n->parent);
 
 					return { iterator(n), true };
 
 				}
+				// иначе, если мы в листе и значение меньше - в левое поддерево
 				else if (cmp(value, to->data)) {
 
 					node* n = make_node(0, to, dummy, dummy);
@@ -654,11 +675,14 @@ public:
 						to = to->parent;
 					}
 
+					sz++;
+
 					fixup(n->parent);
 
 					return { iterator(n), true };
 
 				}
+				// в правое
 				else {
 
 					node* n = make_node(0, to, dummy, dummy);
@@ -686,6 +710,8 @@ public:
 						to = to->parent;
 					}
 
+					sz++;
+
 					fixup(n->parent);
 
 					return { iterator(n), true };
@@ -702,7 +728,9 @@ public:
 		}
 	}
 
-	iterator insert(const_iterator position, const value_type& x);
+	iterator insert(const_iterator position, const value_type& x) {
+		insert(x);
+	}
 
 	iterator find(const value_type& value) const {
 
@@ -786,6 +814,7 @@ public:
 	}
 
 	size_type count(const value_type& key) const {
+
 		size_type res{ 0 };
 
 		iterator it = find(key);
@@ -806,7 +835,7 @@ public:
 
 		return res;
 	}
-	
+
 	std::pair<const_iterator, const_iterator> equal_range(const value_type& key) const;
 
 	iterator erase(iterator elem) {
@@ -815,44 +844,47 @@ public:
 			return end();
 		}
 
-		
-		if (elem->left->is_nil && elem->right->is_nil) { // удаляем лист
-			if (elem->parent->is_nil) { // если в дереве 1 элемент
+		if (elem->parent->is_nil) { // удаляем корень
+			if (elem->left->is_nil&& elem->right->is_nil) { // если это единственный элемент
 				dummy->parent = dummy->left = dummy->right = dummy;
 				delete_node(elem._node());
+				sz--;
 				return end();
 			}
-			else { // в противном случае 
-				
-				node* parent = elem->parent;
+		}
+		else { // в противном случае 
 
-				if (elem._node() == parent->left) { // если удаляемый лист в левом поддереве
-					
-					parent->left = dummy;
+			node* parent = elem->parent;
 
-					if (dummy->left == elem._node()) {
-						dummy->left = parent->left;
-					}
+			if (elem._node() == parent->left) { // если удаляемый лист в левом поддереве
 
-					iterator res(elem);
-					++res;
+				parent->left = dummy;
 
-					iterator temp(parent);
-
-					while (!parent->is_nil) {
-						parent->balance++;
-						if (parent->balance == 2) {
-							break;
-						}
-						parent = parent->parent;
-					}
-
-					fixup(temp._node());
-
-					delete_node(elem._node());
+				if (dummy->left == elem._node()) {
+					dummy->left = parent->left;
 				}
+
+				iterator res(elem);
+				++res;
+
+				iterator temp(parent);
+
+				while (!parent->is_nil) {
+					parent->balance++;
+					if (parent->balance == 2) {
+						break;
+					}
+					parent = parent->parent;
+				}
+
+				sz--;
+
+				fixup(temp._node());
+
+				delete_node(elem._node());
 			}
 		}
+
 
 	}
 
@@ -928,15 +960,15 @@ public:
 	bool operator>=(const avltree& other) {
 		return !(*this < other);
 	}
-	
+
 	bool operator<=(const avltree& other) {
 		return less_equal(dummy->parent, other.dummy->parent);
 	}
-	
+
 	bool operator> (const avltree& other) {
 		return !(*this <= other);
 	}
-	
+
 	bool operator< (const avltree& other) {
 		return less(dummy->parent, other.dummy->parent);
 	}
