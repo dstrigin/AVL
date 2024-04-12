@@ -633,7 +633,7 @@ public:
 						else {
 							to->balance++;
 						}
-						if (to->balance == -2) {
+						if (abs(to->balance) == 2) {
 							break;
 						}
 						temp = to;
@@ -668,7 +668,7 @@ public:
 						else {
 							to->balance++;
 						}
-						if (to->balance == -2 || to->balance == 2) {
+						if (abs(to->balance) == 2) {
 							break;
 						}
 						temp = temp->parent;
@@ -703,7 +703,7 @@ public:
 						else {
 							to->balance++;
 						}
-						if (to->balance == -2 || to->balance == 2) {
+						if (abs(to->balance) == 2) {
 							break;
 						}
 						temp = temp->parent;
@@ -844,47 +844,79 @@ public:
 			return end();
 		}
 
-		if (elem->parent->is_nil) { // удаляем корень
-			if (elem->left->is_nil&& elem->right->is_nil) { // если это единственный элемент
+		node* p = elem->parent;
+
+		iterator res(elem);
+		++res;
+
+		if (elem->left->is_nil && elem->right->is_nil) { // удаляем лист
+			
+			if (p->is_nil) {
+				
 				dummy->parent = dummy->left = dummy->right = dummy;
-				delete_node(elem._node());
-				sz--;
 				return end();
 			}
-		}
-		else { // в противном случае 
-
-			node* parent = elem->parent;
-
-			if (elem._node() == parent->left) { // если удаляемый лист в левом поддереве
-
-				parent->left = dummy;
-
+			else if (elem == p->left) {
+				
+				p->left = dummy;
 				if (dummy->left == elem._node()) {
-					dummy->left = parent->left;
+					dummy->left = p;
 				}
 
-				iterator res(elem);
-				++res;
+				p->balance++;
 
-				iterator temp(parent);
-
-				while (!parent->is_nil) {
-					parent->balance++;
-					if (parent->balance == 2) {
-						break;
-					}
-					parent = parent->parent;
-				}
-
-				sz--;
-
-				fixup(temp._node());
-
-				delete_node(elem._node());
 			}
+			else {
+
+				p->right = dummy;
+				if (dummy->right == elem._node()) {
+					dummy->right = p;
+				}
+
+				p->balance--;
+
+			}
+
+		}
+		else if (elem->left->is_nil || elem->right->is_nil) { // удаляем узел с 1 потомком
+			node* child = elem->left->is_nil ? elem->right : elem->left;
+			
+			if (p->left == elem._node()) {
+				p->left = child;
+				p->balance++;
+			}
+			else {
+				p->right = child;
+				p->balance--;
+			}
+			
+			child->parent = p;
+
+		}
+		else { // есть оба потомка
+			/* TODO */
 		}
 
+		sz--;
+		delete_node(elem._node());
+
+		node* broken(p);
+		node* pp(p->parent);
+
+		while (!pp->is_nil) {
+			if (pp->left == p) {
+				pp->balance--;
+			}
+			else {
+				pp->balance++;
+			}
+			p = pp;
+			pp = pp->parent;
+		}
+
+		fixup(broken);
+
+		return res;
 
 	}
 
@@ -899,7 +931,11 @@ public:
 		}
 	}
 
-	iterator erase(const_iterator first, const_iterator last);
+	iterator erase(const_iterator first, const_iterator last) {
+		while (first != last) {
+			first = erase(first);
+		}
+	}
 
 private:
 	// вспомогательное для сравнения
