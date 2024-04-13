@@ -20,22 +20,20 @@ void info(const avltree<T>& t) {
 int main() {
 
 	avltree<int> t;
+	
+	for (int i = 1; i < 16; i++) {
+		t.insert(i);
+	}
 
-	/*t.insert(1);
-	info(t);
-	t.insert(4);
-	info(t);
-	t.insert(3);
-	info(t);
-	t.insert(5);
-	info(t);
-	t.insert(8);
 	info(t);
 
-	t.erase(1);
+	t.erase(8);
 	info(t);
 
-	t.erase(3);
-	info(t);*/
+	t.erase(6);
+	info(t);
+
+	t.erase(4);
+	info(t);
 
 }

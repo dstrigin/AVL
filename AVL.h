@@ -262,12 +262,21 @@ public:
 	/* создание дерева */
 
 	avltree(Compare comparator = Compare(), allocator_type alloc = allocator_type())
-		: dummy(make_dummy()), cmp(comparator), Alc(alloc) {}
+		: dummy(make_dummy()), cmp(comparator), Alc(alloc) { }
 
 	template <class InputIterator>
-	avltree(InputIterator first, InputIterator last, Compare comparator = Compare(), allocator_type alloc = allocator_type());
+	avltree(InputIterator first, InputIterator last, Compare comparator = Compare(), allocator_type alloc = allocator_type())
+		: dummy(make_dummy()), cmp(comparator), Alc(alloc) {
+		/* TODO */
 
-	avltree(const std::initializer_list<T>& il) : dummy(make_dummy) {
+		// костыль
+		while (first != last) {
+			insert(*first++);
+		}
+
+	}
+
+	avltree(const std::initializer_list<T>& il) : dummy(make_dummy()) {
 		for (const T& element : il) {
 			insert(element);
 		}
@@ -850,14 +859,14 @@ public:
 		++res;
 
 		if (elem->left->is_nil && elem->right->is_nil) { // удаляем лист
-			
+
 			if (p->is_nil) {
-				
+
 				dummy->parent = dummy->left = dummy->right = dummy;
 				return end();
 			}
 			else if (elem == p->left) {
-				
+
 				p->left = dummy;
 				if (dummy->left == elem._node()) {
 					dummy->left = p;
@@ -880,7 +889,7 @@ public:
 		}
 		else if (elem->left->is_nil || elem->right->is_nil) { // удаляем узел с 1 потомком
 			node* child = elem->left->is_nil ? elem->right : elem->left;
-			
+
 			if (p->left == elem._node()) {
 				p->left = child;
 				p->balance++;
@@ -889,12 +898,24 @@ public:
 				p->right = child;
 				p->balance--;
 			}
-			
+
 			child->parent = p;
 
 		}
 		else { // есть оба потомка
-			/* TODO */
+
+			// найдем ближайший по значению
+			iterator closest(elem._node());
+
+			closest = closest->left;
+			while (!closest->right->is_nil) {
+				closest = closest->right;
+			}
+
+			std::swap(closest._node()->data, elem._node()->data);
+			
+			return erase(closest);
+
 		}
 
 		sz--;
@@ -904,11 +925,17 @@ public:
 		node* pp(p->parent);
 
 		while (!pp->is_nil) {
+			if (pp->balance == 0) {
+				break;
+			}
 			if (pp->left == p) {
 				pp->balance--;
 			}
 			else {
 				pp->balance++;
+			}
+			if (abs(pp->balance) == 2) {
+				break;
 			}
 			p = pp;
 			pp = pp->parent;
@@ -935,6 +962,7 @@ public:
 		while (first != last) {
 			first = erase(first);
 		}
+		return first;
 	}
 
 private:
@@ -983,29 +1011,53 @@ private:
 	}
 
 public:
-	// Операции сравнения
+	// сравнение содержимого
 
-	bool operator==(const avltree& other) {
+	bool content_equal(const avltree& other) const {
+
+		if (sz != other.sz) {
+			return false;
+		}
+
+		bool res = true;
+
+		auto it1 = begin();
+		auto it2 = other.begin();
+
+		while (it1 != end()) {
+			if (*it1++ != *it2++) {
+				res = false;
+				break;
+			}
+		}
+
+		return res;
+
+	}
+
+	// операции сравнения
+
+	bool operator==(const avltree& other) const {
 		return equals(dummy->parent, other.dummy->parent);
 	}
 
-	bool operator!=(const avltree& other) {
+	bool operator!=(const avltree& other) const {
 		return !(*this == other);
 	}
 
-	bool operator>=(const avltree& other) {
+	bool operator>=(const avltree& other) const {
 		return !(*this < other);
 	}
 
-	bool operator<=(const avltree& other) {
+	bool operator<=(const avltree& other) const {
 		return less_equal(dummy->parent, other.dummy->parent);
 	}
 
-	bool operator> (const avltree& other) {
+	bool operator> (const avltree& other) const {
 		return !(*this <= other);
 	}
 
-	bool operator< (const avltree& other) {
+	bool operator< (const avltree& other) const {
 		return less(dummy->parent, other.dummy->parent);
 	}
 
