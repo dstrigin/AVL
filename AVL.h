@@ -32,11 +32,6 @@
 5. Сравнить эффективность реализации структуры данных с соответствующим стандартным контейнером – временные тесты на некоторых последовательностях значений.
 */
 
-/*
-1. инвалидация после удаления
-2. компаратор
-*/
-
 template<typename T, class Compare = std::less<T>, class Allocator = std::allocator<T>>
 class avltree {
 
@@ -104,7 +99,8 @@ private:
 	}
 
 	// Создание узла
-	inline node* make_node(T&& val, node* p = nullptr, node* l = nullptr, node* r = nullptr) {
+	template <typename Q>
+	inline node* make_node(Q&& val, node* p = nullptr, node* l = nullptr, node* r = nullptr) {
 		node* new_node = Alc.allocate(1);
 
 		std::allocator_traits<allocator_type>::construct(Alc, &(new_node->parent));
@@ -116,7 +112,7 @@ private:
 		std::allocator_traits<allocator_type>::construct(Alc, &(new_node->right));
 		new_node->right = r;
 
-		std::allocator_traits<allocator_type>::construct(Alc, &(new_node->data), std::forward<T>(val));
+		std::allocator_traits<allocator_type>::construct(Alc, &(new_node->data), std::forward<Q>(val));
 
 		std::allocator_traits<allocator_type>::construct(Alc, &(new_node->balance), 0);
 
@@ -282,12 +278,13 @@ public:
 		}
 	}
 
-	avltree(const avltree& tree) {
+	avltree(const avltree& tree) : dummy(make_dummy()) {
 		//  Размер задаём
 		sz = tree.sz;
 		if (tree.empty()) return;
 
 		dummy->parent = recur_copy_tree(tree.dummy->parent, tree.dummy);
+		dummy->parent->parent = dummy;
 
 		//  Осталось установить min и max
 		node* min = dummy->parent;
@@ -296,7 +293,7 @@ public:
 		}
 		dummy->left = min;
 
-		node* max;
+		node* max = dummy->parent;
 		while (!max->is_nil) {
 			max = max->right;
 		}
@@ -322,6 +319,7 @@ private:
 
 		//  Теперь создаём собственный узел
 		node* current = make_node(source->data, dummy, left_sub_tree, right_sub_tree);
+
 		//  Устанавливаем родителей
 		if (!source->right->is_nil)
 			current->right->parent = current;
@@ -594,8 +592,7 @@ public:
 	std::pair<iterator, bool> insert(const T& value) {
 		if (sz == 0) {
 
-			node* n = make_node(0, dummy, dummy, dummy);
-			n->data = value;
+			node* n = make_node(value, dummy, dummy, dummy);
 			dummy->right = dummy->left = dummy->parent = n;
 			sz++;
 			return { dummy->left, true };
@@ -619,9 +616,8 @@ public:
 
 				// если встретили узел с таким же значением, дублируем
 
-				else if (value == to->data) {
-					node* n = make_node(0, to, to->left, dummy);
-					n->data = value;
+				else if (!cmp(value, to->data) && !cmp(to->data, value)) {
+					node* n = make_node(value, to, to->left, dummy);
 
 					if (!to->left->is_nil) {
 						to->left->parent = n;
@@ -659,8 +655,7 @@ public:
 				// иначе, если мы в листе и значение меньше - в левое поддерево
 				else if (cmp(value, to->data)) {
 
-					node* n = make_node(0, to, dummy, dummy);
-					n->data = value;
+					node* n = make_node(value, to, dummy, dummy);
 
 					to->left = n;
 
@@ -694,8 +689,7 @@ public:
 				// в правое
 				else {
 
-					node* n = make_node(0, to, dummy, dummy);
-					n->data = value;
+					node* n = make_node(value, to, dummy, dummy);
 
 					to->right = n;
 
@@ -738,7 +732,7 @@ public:
 	}
 
 	iterator insert(const_iterator position, const value_type& x) {
-		insert(x);
+		return std::get<0>(insert(x));
 	}
 
 	iterator find(const value_type& value) const {
@@ -845,7 +839,9 @@ public:
 		return res;
 	}
 
-	std::pair<const_iterator, const_iterator> equal_range(const value_type& key) const;
+	std::pair<const_iterator, const_iterator> equal_range(const value_type& key) const {
+		/* todo */
+	}
 
 	iterator erase(iterator elem) {
 
@@ -863,6 +859,7 @@ public:
 			if (p->is_nil) {
 
 				dummy->parent = dummy->left = dummy->right = dummy;
+				sz--;
 				return end();
 			}
 			else if (elem == p->left) {
@@ -888,17 +885,23 @@ public:
 
 		}
 		else if (elem->left->is_nil || elem->right->is_nil) { // удаляем узел с 1 потомком
+			
 			node* child = elem->left->is_nil ? elem->right : elem->left;
 
-			if (p->left == elem._node()) {
-				p->left = child;
-				p->balance++;
+			if (!p->is_nil) {
+				if (p->left == elem._node()) {
+					p->left = child;
+					p->balance++;
+				}
+				else {
+					p->right = child;
+					p->balance--;
+				}
 			}
-			else {
-				p->right = child;
-				p->balance--;
+			else { // ситуация, когда в дереве 2 элемента
+				p->parent = child;
 			}
-
+			
 			child->parent = p;
 
 		}
@@ -917,9 +920,6 @@ public:
 			return erase(closest);
 
 		}
-
-		sz--;
-		delete_node(elem._node());
 
 		node* broken(p);
 		node* pp(p->parent);
@@ -940,6 +940,9 @@ public:
 			p = pp;
 			pp = pp->parent;
 		}
+
+		sz--;
+		delete_node(elem._node());
 
 		fixup(broken);
 
@@ -1071,10 +1074,10 @@ public:
 private:
 	//  Рекурсивное удаление узлов дерева, не включая фиктивную вершину
 	void Free_nodes(node* n) {
-		if (n == nullptr) {
+		if (n->is_nil) {
 			return;
 		}
-		if (n != dummy) {
+		if (!n->is_nil) {
 			Free_nodes(n->left);
 			Free_nodes(n->right);
 			delete_node(n);
