@@ -604,6 +604,10 @@ public:
 
 			while (true) {
 
+				if (to->is_nil) {
+					return std::make_pair(end(), false);
+				}
+
 				// двигаемся по дереву
 
 				if (cmp(value, to->data) && !to->left->is_nil) {
@@ -690,6 +694,145 @@ public:
 				else {
 
 					node* n = make_node(value, to, dummy, dummy);
+
+					to->right = n;
+
+					if (dummy->right == to) {
+						dummy->right = n;
+					}
+
+					node* temp = n;
+
+					while (!to->is_nil) {
+						if (temp == to->left) {
+							to->balance--;
+						}
+						else {
+							to->balance++;
+						}
+						if (abs(to->balance) == 2) {
+							break;
+						}
+						temp = temp->parent;
+						to = to->parent;
+					}
+
+					sz++;
+
+					fixup(n->parent);
+
+					return { iterator(n), true };
+
+				}
+			}
+		}
+	}
+
+	std::pair<iterator, bool> insert(T&& value) {
+		if (sz == 0) {
+
+			node* n = make_node(std::move(value), dummy, dummy, dummy);
+			dummy->right = dummy->left = dummy->parent = n;
+			sz++;
+			return { dummy->left, true };
+
+		}
+		else {
+
+			node* to = dummy->parent;
+
+			while (true) {
+
+				if (to->is_nil) {
+					return std::make_pair(end(), false);
+				}
+
+				// двигаемся по дереву
+
+				if (cmp(value, to->data) && !to->left->is_nil) {
+					to = to->left;
+				}
+
+				else if (cmp(to->data, value) && !to->right->is_nil) {
+					to = to->right;
+				}
+
+				// если встретили узел с таким же значением, дублируем
+
+				else if (!cmp(value, to->data) && !cmp(to->data, value)) {
+					node* n = make_node(std::move(value), to, to->left, dummy);
+
+					if (!to->left->is_nil) {
+						to->left->parent = n;
+					}
+
+					to->left = n;
+
+					if (dummy->left == to) {
+						dummy->left = n;
+					}
+
+					node* temp = n;
+
+					while (!to->is_nil) {
+						if (temp == to->left) {
+							to->balance--;
+						}
+						else {
+							to->balance++;
+						}
+						if (abs(to->balance) == 2) {
+							break;
+						}
+						temp = to;
+						to = to->parent;
+					}
+
+					sz++;
+
+					fixup(n->parent);
+
+					return { iterator(n), true };
+
+				}
+				// иначе, если мы в листе и значение меньше - в левое поддерево
+				else if (cmp(value, to->data)) {
+
+					node* n = make_node(std::move(value), to, dummy, dummy);
+
+					to->left = n;
+
+					if (dummy->left == to) {
+						dummy->left = n;
+					}
+
+					node* temp = n;
+
+					while (!to->is_nil) {
+						if (temp == to->left) {
+							to->balance--;
+						}
+						else {
+							to->balance++;
+						}
+						if (abs(to->balance) == 2) {
+							break;
+						}
+						temp = temp->parent;
+						to = to->parent;
+					}
+
+					sz++;
+
+					fixup(n->parent);
+
+					return { iterator(n), true };
+
+				}
+				// в правое
+				else {
+
+					node* n = make_node(std::move(value), to, dummy, dummy);
 
 					to->right = n;
 
@@ -1005,12 +1148,17 @@ private:
 		if (curr->is_nil && other->is_nil) {
 			return true;
 		}
-		if (!curr->is_nil && !other->is_nil) {
+		else if (curr->is_nil && !other->is_nil) {
+			return true;
+		}
+		else if (!curr->is_nil && other->is_nil) {
+			return false;
+		}
+		else {
 			return curr->data <= other->data
 				&& less_equal(curr->left, other->left)
 				&& less_equal(curr->right, other->right);
 		}
-		return false;
 	}
 
 public:
