@@ -153,6 +153,8 @@ public:
 
 		iterator(node* n) : p(n) {}
 
+		iterator() : p(nullptr) {}
+
 		reference operator*() const noexcept {
 			return p->data;
 		}
@@ -621,6 +623,7 @@ public:
 				// если встретили узел с таким же значением, дублируем
 
 				else if (!cmp(value, to->data) && !cmp(to->data, value)) {
+
 					node* n = make_node(value, to, to->left, dummy);
 
 					if (!to->left->is_nil) {
@@ -1094,14 +1097,13 @@ public:
 	}
 
 	size_type erase(const value_type& elem) {
-		iterator it = find(elem);
-		if (!it->is_nil) {
+		size_type res{};
+		iterator it;
+		while (!(it = find(elem))->is_nil) {
 			erase(it);
-			return 1;
+			res++;
 		}
-		else {
-			return 0;
-		}
+		return res;
 	}
 
 	iterator erase(const_iterator first, const_iterator last) {

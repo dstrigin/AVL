@@ -24,14 +24,16 @@ template<typename T> using ContainerTemplate = avltree<T, Mypred<T>, Myal<T>>;
 
 int main() {
 
-	ContainerTemplate<std::string> T1{ "abc", "cde", "123", "AAAAAAAA" };
+	avltree<int> t{ 1, 3, 5 };
+	info(t);
 
-	info(T1);
+	t.insert(5);
+	info(t);
 
-	std::vector<std::string> check1{ "123", "AAAAAAAA", "abc", "cde" };
-	for (const auto& str : check1) {
-		T1.erase(str);
-		info(T1);
-	}
+	t.insert(5);
+	info(t);
+
+	t.insert(6);
+	info(t);
 
 }
