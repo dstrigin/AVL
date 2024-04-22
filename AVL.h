@@ -986,7 +986,36 @@ public:
 	}
 
 	std::pair<const_iterator, const_iterator> equal_range(const value_type& key) const {
-		/* todo */
+		
+		const_iterator first(find(key));
+
+		if (first->is_nil) {
+			return { end(), end() };
+		}
+		else {
+			const_iterator left = first;
+			const_iterator right = first;
+
+			while (*left == key) {
+				--left;
+			}
+			// после выхода из цикла на позиции слева от элемента с искомым значением
+			// поэтому передвинем
+			if (left->is_nil) { // если на фиктивном узле - значит ушли из начала
+				left = begin();
+			}
+			else {
+				++left;
+			}
+
+			while (*right == key) {
+				++right;
+			} // здесь не передвигаем, так как конец диапазона находится за ним (канон STL)
+			
+			return { left, right };
+
+		}
+
 	}
 
 	iterator erase(iterator elem) {
@@ -1097,13 +1126,14 @@ public:
 	}
 
 	size_type erase(const value_type& elem) {
-		size_type res{};
-		iterator it;
-		while (!(it = find(elem))->is_nil) {
+		iterator it = find(elem);
+		if (!it->is_nil) {
 			erase(it);
-			res++;
+			return 1;
 		}
-		return res;
+		else {
+			return 0;
+		}
 	}
 
 	iterator erase(const_iterator first, const_iterator last) {
