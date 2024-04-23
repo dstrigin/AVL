@@ -70,9 +70,6 @@ public:
 
 private:
 
-	/* В прошлой лабораторной я делал другую структуру дерева. В этой попробую реализовать так,
-	чтобы все листы ссылались на фиктивный */
-
 	// фиктивный узел
 	node* dummy;
 
@@ -265,9 +262,7 @@ public:
 	template <class InputIterator>
 	avltree(InputIterator first, InputIterator last, Compare comparator = Compare(), allocator_type alloc = allocator_type())
 		: dummy(make_dummy()), cmp(comparator), Alc(alloc) {
-		/* TODO */
-
-		// костыль
+		
 		while (first != last) {
 			insert(*first++);
 		}
@@ -908,7 +903,7 @@ public:
 			if (cmp(key, *root)) {
 				--root;
 			}
-			else if (key == *root) {
+			else if (!cmp(*root, key)) {
 				return root;
 			}
 			else {
@@ -937,7 +932,7 @@ public:
 			if (cmp(key, *root)) {
 				--root;
 			}
-			else if (key == *root) {
+			else if (!cmp(*root, key)) {
 				return ++root;
 			}
 			else {
@@ -946,7 +941,7 @@ public:
 					++root;
 				}
 
-				if (*root == key) {
+				if (!cmp(*root, key) && !cmp(key, *root)) {
 					return ++root;
 				}
 				else {
