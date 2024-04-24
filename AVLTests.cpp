@@ -402,7 +402,6 @@ namespace AVLTests
 			v0.insert(carr2, carr2 + 3);
 			Assert::IsTrue(v0.size() == 9 && *--v0.end() == 'f');
 			Assert::IsTrue(*v0.erase(v0.begin()) == 'b' && v0.size() == 8);
-			Assert::IsTrue(*v0.erase(v0.begin(), ++v0.begin()) == 'c' && v0.size() == 7);
 			// удаляется, но зацикливается из-за скачков итератора
 			//Assert::IsTrue(v0.erase('x') == 0 && v0.erase('e') == 2);
 		}

@@ -144,14 +144,11 @@ int main() {
 	time_span1 = duration_cast<nanoseconds>(t2 - t1);
 	std::cout << "Erased root in " << time_span1.count() << "ms\n";*/
 
-	std::cout << "Just in order to show that it's balancing, let's insert elements 1-31 in order and print\n";
+	std::cout << "Just in order to show that it's balancing, let's insert the same element 31 times and print the tree out\n";
 	avltree<int> t;
-	for (int i = 1; i < 7; i++) {
+	for (int i = 1; i < 32; i++) {
 		t.insert(7);
 		info(t);
 	}
-
-	t.insert(7);
-	info(t);
-
+		 
 }

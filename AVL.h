@@ -8,30 +8,6 @@
 #include <exception>
 #include <iomanip>
 
-/*
-Структуру данных оформить в виде контейнера, с поддержкой итераторов соответствующей категории.
-Любые аспекты реализации должны быть инкапсулированы (спрятаны),
-работа только посредством итераторов и соответствующих методов шаблона.
-Названия методов должны совпадать с таковыми у контейнеров set и multiset стандартной библиотеки.
-Должны быть реализованы методы upper_bound и lower_bound.
-Замечание: указанные контейнеры в стандартной библиотеке поддерживают различные типы итераторов,
-относящиеся к категории двунаправленных итераторов – константные и неконстантные, прямые и обратные.
-Константные и неконстантные имеют одинаковую семантику и являются, по сути, константными итераторами.
-Соответственно, реализовывать константный итератор либо не нужно, либо сделать это с
-минимальными затратами как псевдоним неконстантного. Обратные итераторы реализовывать не требуется.
-
-Обязательно прохождение всех тестов для соответствующего типа контейнера (тестирующий проект размещен в архиве,
-также есть ссылка на обучающее видео).
-
-На основе выбранной структуры данных реализовать шаблон множества, поддерживающий следующие операции:
-
-1. Добавление, извлечение элементов, поиск (проверка на вхождение);
-2. Вывод содержимого структуры данных на экран «боком» (если явно указана возможность печати);
-3. Для каждой операции добавления и удаления реализовать подсчет количества вращений для восстановления балансировки;
-4. Сохранение в файл и чтение из файла (текстовый);
-5. Сравнить эффективность реализации структуры данных с соответствующим стандартным контейнером – временные тесты на некоторых последовательностях значений.
-*/
-
 template<typename T, class Compare = std::less<T>, class Allocator = std::allocator<T>>
 class avltree {
 
@@ -262,7 +238,7 @@ public:
 	template <class InputIterator>
 	avltree(InputIterator first, InputIterator last, Compare comparator = Compare(), allocator_type alloc = allocator_type())
 		: dummy(make_dummy()), cmp(comparator), Alc(alloc) {
-		
+
 		while (first != last) {
 			insert(*first++);
 		}
@@ -587,305 +563,207 @@ private:
 public:
 
 	std::pair<iterator, bool> insert(const T& value) {
-		if (sz == 0) {
 
+		if (sz == 0) {
 			node* n = make_node(value, dummy, dummy, dummy);
 			dummy->right = dummy->left = dummy->parent = n;
 			sz++;
-			return { dummy->left, true };
-
+			return { iterator(n), true };
 		}
-		else {
 
-			node* to = dummy->parent;
+		node* to = dummy->parent;
+		node* parent = to->parent;
 
-			while (true) {
+		while (!to->is_nil) {
+			parent = to;
+			if (cmp(value, to->data)) {
+				to = to->left;
+			}
+			else if (cmp(to->data, value)) {
+				to = to->right;
+			}
+			else { // дубликат
 
-				if (to->is_nil) {
-					return std::make_pair(end(), false);
-				}
-
-				// двигаемся по дереву
-
-				if (cmp(value, to->data) && !to->left->is_nil) {
-					to = to->left;
-				}
-
-				else if (cmp(to->data, value) && !to->right->is_nil) {
+				while (!to->right->is_nil && !cmp(to->data, value) && !cmp(value, to->data)) {
 					to = to->right;
 				}
 
-				// если встретили узел с таким же значением, дублируем
+				node* n = make_node(value, to, dummy, dummy);
 
-				else if (!cmp(value, to->data) && !cmp(to->data, value)) {
+				if (!to->right->is_nil) {
+					to->right->parent = n;
+					n->right = to->right;
+				}
 
-					if (!to->left->is_nil) {
-						
-						to = to->left;
+				if (dummy->right == to) {
+					dummy->right = n;
+				}
 
-						while (!to->right->is_nil) {
-							to = to->right;
-						}
+				to->right = n;
 
-					}
+				sz++;
 
-					node* n = make_node(value, to, dummy, dummy);
+				node* temp = n;
+				parent = n->parent;
 
-					if (to->left->is_nil) {
-						to->left = n;
+				while (!parent->is_nil) {
+					if (temp == parent->left) {
+						parent->balance--;
 					}
 					else {
-						to->right = n;
+						parent->balance++;
 					}
-
-					if (dummy->left == to) {
-						dummy->left = n;
+					if (abs(parent->balance) == 2) {
+						break;
 					}
-
-					node* temp = n;
-
-					while (!to->is_nil) {
-						if (temp == to->left) {
-							to->balance--;
-						}
-						else {
-							to->balance++;
-						}
-						if (abs(to->balance) == 2) {
-							break;
-						}
-						temp = to;
-						to = to->parent;
-					}
-
-					sz++;
-
-					fixup(n->parent);
-
-					return { iterator(n), true };
-
+					temp = parent;
+					parent = parent->parent;
 				}
-				// иначе, если мы в листе и значение меньше - в левое поддерево
-				else if (cmp(value, to->data)) {
 
-					node* n = make_node(value, to, dummy, dummy);
+				fixup(n);
 
-					to->left = n;
-
-					if (dummy->left == to) {
-						dummy->left = n;
-					}
-
-					node* temp = n;
-
-					while (!to->is_nil) {
-						if (temp == to->left) {
-							to->balance--;
-						}
-						else {
-							to->balance++;
-						}
-						if (abs(to->balance) == 2) {
-							break;
-						}
-						temp = temp->parent;
-						to = to->parent;
-					}
-
-					sz++;
-
-					fixup(n->parent);
-
-					return { iterator(n), true };
-
-				}
-				// в правое
-				else {
-
-					node* n = make_node(value, to, dummy, dummy);
-
-					to->right = n;
-
-					if (dummy->right == to) {
-						dummy->right = n;
-					}
-
-					node* temp = n;
-
-					while (!to->is_nil) {
-						if (temp == to->left) {
-							to->balance--;
-						}
-						else {
-							to->balance++;
-						}
-						if (abs(to->balance) == 2) {
-							break;
-						}
-						temp = temp->parent;
-						to = to->parent;
-					}
-
-					sz++;
-
-					fixup(n->parent);
-
-					return { iterator(n), true };
-
-				}
+				return { iterator(n), true };
 			}
 		}
+
+		// Вставляем узел
+		node* n = make_node(value, parent, dummy, dummy);
+		if (cmp(n->data, parent->data)) {
+			parent->left = n;
+			if (dummy->left == parent) {
+				dummy->left = n;
+			}
+		}
+		else {
+			parent->right = n;
+			if (dummy->right == parent) {
+				dummy->right = n;
+			}
+		}
+		sz++;
+
+		// Обновляем баланс узлов вверх по дереву
+		node* temp = n;
+
+		while (!parent->is_nil) {
+			if (temp == parent->left) {
+				parent->balance--;
+			}
+			else {
+				parent->balance++;
+			}
+			if (std::abs(parent->balance) == 2) {
+				break;
+			}
+			temp = parent;
+			parent = parent->parent;
+		}
+
+		fixup(n);
+
+		return { iterator(n), true };
 	}
 
 	std::pair<iterator, bool> insert(T&& value) {
-		if (sz == 0) {
 
+		if (sz == 0) {
 			node* n = make_node(std::move(value), dummy, dummy, dummy);
 			dummy->right = dummy->left = dummy->parent = n;
 			sz++;
-			return { dummy->left, true };
-
+			return { iterator(n), true };
 		}
-		else {
 
-			node* to = dummy->parent;
+		node* to = dummy->parent;
+		node* parent = to->parent;
 
-			while (true) {
+		while (!to->is_nil) {
+			parent = to;
+			if (cmp(value, to->data)) {
+				to = to->left;
+			}
+			else if (cmp(to->data, value)) {
+				to = to->right;
+			}
+			else { // дубликат
 
-				if (to->is_nil) {
-					return std::make_pair(end(), false);
-				}
-
-				// двигаемся по дереву
-
-				if (cmp(value, to->data) && !to->left->is_nil) {
-					to = to->left;
-				}
-
-				else if (cmp(to->data, value) && !to->right->is_nil) {
+				while (!to->right->is_nil && !cmp(to->data, value) && !cmp(value, to->data)) {
 					to = to->right;
 				}
 
-				// если встретили узел с таким же значением, дублируем
+				node* n = make_node(std::move(value), to, dummy, dummy);
 
-				else if (!cmp(value, to->data) && !cmp(to->data, value)) {
+				if (!to->right->is_nil) {
+					to->right->parent = n;
+					n->right = to->right;
+				}
 
-					if (!to->left->is_nil) {
+				if (dummy->right == to) {
+					dummy->right = n;
+				}
 
-						to = to->left;
+				to->right = n;
 
-						while (!to->right->is_nil) {
-							to = to->right;
-						}
+				sz++;
+				
+				node* temp = n;
+				parent = n->parent;
 
-					}
-
-					node* n = make_node(std::move(value), to, dummy, dummy);
-
-					if (to->left->is_nil) {
-						to->left = n;
+				while (!parent->is_nil) {
+					if (temp == parent->left) {
+						parent->balance--;
 					}
 					else {
-						to->right = n;
+						parent->balance++;
 					}
-
-					if (dummy->left == to) {
-						dummy->left = n;
+					if (abs(parent->balance) == 2) {
+						break;
 					}
-
-					node* temp = n;
-
-					while (!to->is_nil) {
-						if (temp == to->left) {
-							to->balance--;
-						}
-						else {
-							to->balance++;
-						}
-						if (abs(to->balance) == 2) {
-							break;
-						}
-						temp = to;
-						to = to->parent;
-					}
-
-					sz++;
-
-					fixup(n->parent);
-
-					return { iterator(n), true };
-
+					temp = parent;
+					parent = parent->parent;
 				}
-				// иначе, если мы в листе и значение меньше - в левое поддерево
-				else if (cmp(value, to->data)) {
+				
+				fixup(n);
 
-					node* n = make_node(std::move(value), to, dummy, dummy);
-
-					to->left = n;
-
-					if (dummy->left == to) {
-						dummy->left = n;
-					}
-
-					node* temp = n;
-
-					while (!to->is_nil) {
-						if (temp == to->left) {
-							to->balance--;
-						}
-						else {
-							to->balance++;
-						}
-						if (abs(to->balance) == 2) {
-							break;
-						}
-						temp = temp->parent;
-						to = to->parent;
-					}
-
-					sz++;
-
-					fixup(n->parent);
-
-					return { iterator(n), true };
-
-				}
-				// в правое
-				else {
-
-					node* n = make_node(std::move(value), to, dummy, dummy);
-
-					to->right = n;
-
-					if (dummy->right == to) {
-						dummy->right = n;
-					}
-
-					node* temp = n;
-
-					while (!to->is_nil) {
-						if (temp == to->left) {
-							to->balance--;
-						}
-						else {
-							to->balance++;
-						}
-						if (abs(to->balance) == 2) {
-							break;
-						}
-						temp = temp->parent;
-						to = to->parent;
-					}
-
-					sz++;
-
-					fixup(n->parent);
-
-					return { iterator(n), true };
-
-				}
+				return { iterator(n), true };
 			}
 		}
+
+		// Вставляем узел
+		node* n = make_node(std::move(value), parent, dummy, dummy);
+		if (cmp(n->data, parent->data)) {
+			parent->left = n;
+			if (dummy->left == parent) {
+				dummy->left = n;
+			}
+		}
+		else {
+			parent->right = n;
+			if (dummy->right == parent) {
+				dummy->right = n;
+			}
+		}
+		sz++;
+
+		// Обновляем баланс узлов вверх по дереву
+		node* temp = n;
+
+		while (!parent->is_nil) {
+			if (temp == parent->left) {
+				parent->balance--;
+			}
+			else {
+				parent->balance++;
+			}
+			if (std::abs(parent->balance) == 2) {
+				break;
+			}
+			temp = parent;
+			parent = parent->parent;
+		}
+
+		fixup(n);
+
+		return { iterator(n), true };
 	}
 
 	template <class InputIterator>
@@ -1004,7 +882,7 @@ public:
 	}
 
 	std::pair<const_iterator, const_iterator> equal_range(const value_type& key) const {
-		
+
 		const_iterator first(find(key));
 
 		if (first->is_nil) {
@@ -1029,7 +907,7 @@ public:
 			while (!cmp(*right, key) && !cmp(key, *right)) {
 				++right;
 			} // здесь не передвигаем, так как конец диапазона находится за ним (канон STL)
-			
+
 			return { left, right };
 
 		}
@@ -1078,7 +956,7 @@ public:
 
 		}
 		else if (elem->left->is_nil || elem->right->is_nil) { // удаляем узел с 1 потомком
-			
+
 			node* child = elem->left->is_nil ? elem->right : elem->left;
 
 			if (!p->is_nil) {
@@ -1094,7 +972,7 @@ public:
 			else { // ситуация, когда в дереве 2 элемента
 				p->parent = child;
 			}
-			
+
 			child->parent = p;
 
 		}
@@ -1109,7 +987,7 @@ public:
 			}
 
 			std::swap(closest._node()->data, elem._node()->data);
-			
+
 			return erase(closest);
 
 		}
