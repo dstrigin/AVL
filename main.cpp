@@ -28,11 +28,11 @@ template<typename T> using ContainerTemplate = avltree<T>;
 //template<typename T> using ContainerTemplate = std::multiset<T>;
 
 int main() {
-
+	/*
 	using namespace std;
 	using namespace std::chrono;
 
-	// генератор случайных чисел
+	// random generator
 	random_device rd;
 	mt19937 engine(rd());
 	uniform_int_distribution<int> dist(1, 1000);
@@ -136,7 +136,7 @@ int main() {
 	time_span1 = duration_cast<nanoseconds>(t2 - t1);
 	std::cout << "Erased upper_bound of 643 in " << time_span1.count() << "ms\n";
 
-	/*t1 = high_resolution_clock::now();
+	t1 = high_resolution_clock::now();
 
 	ms.erase(ms.get_root());
 
@@ -146,40 +146,12 @@ int main() {
 
 	std::cout << "Just in order to show that it's balancing, let's insert elements 1-31 in order and print\n";
 	avltree<int> t;
-	for (int i = 1; i < 32; i++) {
+	for (int i = 1; i < 7; i++) {
 		t.insert(7);
+		info(t);
 	}
+
+	t.insert(7);
 	info(t);
 
 }
-
-/*
-
-	log for own class (avltree<T>):
-Created 10.000 elements container in 0.0082682ms
-Copied 10.000 elements container in 0.0033563ms
-Created 10.000 elements container by range in 0.004912ms
-Found existing element in 0.0003607ms
-Found that element does not exist in 1e-07ms
-Found lower_bound of 327 in 0.0001499ms
-It was 327
-Found upper_bound of 643 in 0.0001399ms
-It was 644
-Erased lower_bound of 327 in 0.0001591ms
-Erased upper_bound of 643 in 0.0001337ms
-Erased root in 3.6e-06ms
-
-	log for std::multiset<T>:
-Created 10.000 elements container in 0.0066596ms
-Copied 10.000 elements container in 0.0026829ms
-Created 10.000 elements container by range in 0.0039554ms
-Found existing element in 3.6e-06ms
-Found that element does not exist in 0ms
-Found lower_bound of 327 in 1.9e-06ms
-It was 327
-Found upper_bound of 643 in 1.5e-06ms
-It was 644
-Erased lower_bound of 327 in 1.07e-05ms
-Erased upper_bound of 643 in 1.05e-05ms
-
-*/

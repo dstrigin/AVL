@@ -619,13 +619,24 @@ public:
 
 				else if (!cmp(value, to->data) && !cmp(to->data, value)) {
 
-					node* n = make_node(value, to, to->left, dummy);
-
 					if (!to->left->is_nil) {
-						to->left->parent = n;
+						
+						to = to->left;
+
+						while (!to->right->is_nil) {
+							to = to->right;
+						}
+
 					}
 
-					to->left = n;
+					node* n = make_node(value, to, dummy, dummy);
+
+					if (to->left->is_nil) {
+						to->left = n;
+					}
+					else {
+						to->right = n;
+					}
 
 					if (dummy->left == to) {
 						dummy->left = n;
@@ -758,13 +769,25 @@ public:
 				// если встретили узел с таким же значением, дублируем
 
 				else if (!cmp(value, to->data) && !cmp(to->data, value)) {
-					node* n = make_node(std::move(value), to, to->left, dummy);
 
 					if (!to->left->is_nil) {
-						to->left->parent = n;
+
+						to = to->left;
+
+						while (!to->right->is_nil) {
+							to = to->right;
+						}
+
 					}
 
-					to->left = n;
+					node* n = make_node(std::move(value), to, dummy, dummy);
+
+					if (to->left->is_nil) {
+						to->left = n;
+					}
+					else {
+						to->right = n;
+					}
 
 					if (dummy->left == to) {
 						dummy->left = n;
@@ -991,7 +1014,7 @@ public:
 			const_iterator left = first;
 			const_iterator right = first;
 
-			while (*left == key) {
+			while (!cmp(*left, key) && !cmp(key, *left)) {
 				--left;
 			}
 			// после выхода из цикла на позиции слева от элемента с искомым значением
@@ -1003,7 +1026,7 @@ public:
 				++left;
 			}
 
-			while (*right == key) {
+			while (!cmp(*right, key) && !cmp(key, *right)) {
 				++right;
 			} // здесь не передвигаем, так как конец диапазона находится за ним (канон STL)
 			
