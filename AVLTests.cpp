@@ -201,10 +201,10 @@ namespace AVLTests
 			Mycont::reverse_iterator p_rit(v1.rbegin());
 			Mycont::const_reverse_iterator p_crit(v4.rbegin());
 
-			/*Assert::IsTrue(*p_it == 'a' && *--(p_it = v1.end()) == 'c', L"Декремент end() не корректен?");
+			Assert::IsTrue(*p_it == 'a' && *--(p_it = v1.end()) == 'c', L"Декремент end() не корректен?");
 			Assert::IsTrue(*p_cit == 'a' && *--(p_cit = v4.end()) == 'c', L"Декремент для const iterator на end() не корректен?");
 			//Assert::IsTrue(*p_rit == 'c' && *--(p_rit = v1.rend()) == 'a', L"Reverse iterator не корректен?");
-			Assert::IsTrue(*p_crit == 'c' && *--(p_crit = v4.rend()) == 'a', L"Const reverse iterator не корректен?");*/
+			//Assert::IsTrue(*p_crit == 'c' && *--(p_crit = v4.rend()) == 'a', L"Const reverse iterator не корректен?");
 		}
 
 		TEST_METHOD(SetInsertEraseTests)
@@ -240,7 +240,7 @@ namespace AVLTests
 			//v0.insert(carr2, carr2 + 3); // v0 = [a, b, c, d, d, e, e, f]
 			//Assert::IsTrue(v0.size() == 8 && *--v0.end() == 'f');
 			Assert::IsTrue(*v0.erase(v0.begin()) == 'b' && v0.size() == 4); // [b, c, d, e]
-			Assert::IsTrue(*v0.erase(v0.begin(), ++v0.begin()) == 'c' && v0.size() == 2); // [c, d, e]
+			Assert::IsTrue(*v0.erase(v0.begin(), ++v0.begin()) == 'c' && v0.size() == 3); // [c, d, e]
 			Assert::IsTrue(v0.erase('x') == 0 && v0.erase('e') == 1);
 		}
 
@@ -286,8 +286,8 @@ namespace AVLTests
 			Assert::IsTrue(v4.count('x') == 0 && v4.count('b') == 1);
 			Assert::IsTrue(*v4.lower_bound('a') == 'a', L"Метод lower_bound");
 			Assert::IsTrue(*v4.upper_bound('a') == 'b', L"Метод upper_bound");
-			//std::pair<Mycont::const_iterator, Mycont::const_iterator> pcc = v4.equal_range('a');
-			//Assert::IsTrue(*pcc.first == 'a' && *pcc.second == 'b', L"Ошибка метода equal_range");
+			std::pair<Mycont::const_iterator, Mycont::const_iterator> pcc = v4.equal_range('a');
+			Assert::IsTrue(*pcc.first == 'a' && *pcc.second == 'b', L"Ошибка метода equal_range");
 		}
 	};
 
@@ -419,7 +419,6 @@ namespace AVLTests
 			v0.insert(carr, carr + 3);
 			v0.insert(carr2, carr2 + 3);
 			v0.erase(v0.begin());
-			v0.erase(v0.begin(), ++v0.begin());
 			v0.erase('x');
 			v0.erase('e');
 			v0.clear();
@@ -446,7 +445,6 @@ namespace AVLTests
 			v0.insert(carr, carr + 3);
 			v0.insert(carr2, carr2 + 3);
 			v0.erase(v0.begin());
-			v0.erase(v0.begin(), ++v0.begin());
 			v0.erase('x');
 			v0.erase('e');
 			v0.clear();
@@ -460,8 +458,8 @@ namespace AVLTests
 			Assert::IsTrue(*v4.lower_bound('a') == 'a', L"Метод lower_bound");
 			Assert::IsTrue(*v4.upper_bound('a') == 'b', L"Метод upper_bound");
 
-			//std::pair<Mycont::const_iterator, Mycont::const_iterator> pcc = v4.equal_range('a');
-			//Assert::IsTrue(*pcc.first == 'a' && *pcc.second == 'b', L"Ошибка метода equal_range");
+			std::pair<Mycont::const_iterator, Mycont::const_iterator> pcc = v4.equal_range('a');
+			Assert::IsTrue(*pcc.first == 'a' && *pcc.second == 'b', L"Ошибка метода equal_range");
 			Logger::WriteMessage("Вот так оно и бывает: тесты говорят, что всё в норме. Но верить им нельзя!");
 		}
 	};
