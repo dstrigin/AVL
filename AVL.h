@@ -12,12 +12,12 @@ template<typename T, class Compare = std::less<T>, class Allocator = std::alloca
 class avltree {
 
 	struct node {
-		T data;				// значение
-		int balance;		// разность количества дочерних узлов в правом и левом поддеревьях
-		node* parent;		// родительский узел
-		node* left;			// левый дочерний узел
-		node* right;		// правый дочерний узел
-		bool is_nil;		// является ли фиктивным узлом
+		T data;					// значение
+		unsigned char balance;	// разность количества дочерних узлов в правом и левом поддеревьях
+		node* parent;			// родительский узел
+		node* left;				// левый дочерний узел
+		node* right;			// правый дочерний узел
+		bool is_nil;			// является ли фиктивным узлом
 	};
 
 	Compare cmp = Compare();
@@ -28,21 +28,21 @@ class avltree {
 
 public:
 
-	using key_type = T;
-	using key_compare = Compare;
-	using value_type = T;
-	using value_compare = Compare;
-	using allocator_type = typename node_allocator_type;
-	using size_type = size_t;
-	using difference_type = ptrdiff_t;
-	using pointer = value_type*;
-	using const_pointer = const value_type*;
-	using reference = value_type&;
-	using const_reference = const value_type&;
+	using key_type					= T;
+	using key_compare				= Compare;
+	using value_type				= T;
+	using value_compare				= Compare;
+	using allocator_type			= typename node_allocator_type;
+	using size_type					= size_t;
+	using difference_type			= ptrdiff_t;
+	using pointer					= value_type*;
+	using const_pointer				= const value_type*;
+	using reference					= value_type&;
+	using const_reference			= const value_type&;
 	class iterator;
-	using const_iterator = iterator;
-	using reverse_iterator = std::reverse_iterator<iterator>;
-	using const_reverse_iterator = std::reverse_iterator<const_iterator>;
+	using const_iterator			= iterator;
+	using reverse_iterator			= std::reverse_iterator<iterator>;
+	using const_reverse_iterator	= std::reverse_iterator<const_iterator>;
 
 private:
 
@@ -53,6 +53,7 @@ private:
 
 	// Создание фиктивной вершины
 	inline node* make_dummy() {
+
 		dummy = Alc.allocate(1);
 
 		std::allocator_traits<allocator_type>::construct(Alc, &(dummy->parent));
@@ -74,6 +75,7 @@ private:
 	// Создание узла
 	template <typename Q>
 	inline node* make_node(Q&& val, node* p = nullptr, node* l = nullptr, node* r = nullptr) {
+
 		node* new_node = Alc.allocate(1);
 
 		std::allocator_traits<allocator_type>::construct(Alc, &(new_node->parent));
@@ -115,14 +117,15 @@ public:
 
 	class iterator
 	{
-		node* p;
+
+		node* p; // узел, на который указывает
 
 	public:
 		using iterator_category = std::bidirectional_iterator_tag;
-		using value_type = avltree::value_type;
-		using difference_type = avltree::difference_type;
-		using pointer = avltree::const_pointer;
-		using reference = avltree::const_reference;
+		using value_type		= avltree::value_type;
+		using difference_type	= avltree::difference_type;
+		using pointer			= avltree::const_pointer;
+		using reference			= avltree::const_reference;
 
 		iterator(node* n) : p(n) {}
 
@@ -202,39 +205,45 @@ public:
 		}
 
 		//  Эти операции не допускаются между прямыми и обратными итераторами
-		const iterator& operator=(const reverse_iterator& it) = delete;
-		bool operator==(const reverse_iterator& it) = delete;
-		bool operator!=(const reverse_iterator& it) = delete;
-		iterator(const reverse_iterator& it) = delete;
+		const iterator& operator=(const reverse_iterator& it)	= delete;
+		bool operator==(const reverse_iterator& it)				= delete;
+		bool operator!=(const reverse_iterator& it)				= delete;
+		iterator(const reverse_iterator& it)					= delete;
 	};
 
 	/* работа с итераторами в дереве */
 
-	using const_iterator = iterator;
-	using reverse_iterator = std::reverse_iterator<iterator>;
-	using const_reverse_iterator = std::reverse_iterator<const_iterator>;
+	using const_iterator			= iterator;
+	using reverse_iterator			= std::reverse_iterator<iterator>;
+	using const_reverse_iterator	= std::reverse_iterator<const_iterator>;
 
+	// начало коллекции
 	iterator begin() const noexcept {
 		return iterator(dummy->left);
 	}
 
+	// конец коллекции
 	iterator end() const noexcept {
 		return iterator(dummy);
 	}
 
+	// обратный итератор начала
 	reverse_iterator rbegin() const	noexcept {
 		return reverse_iterator(dummy->right);
 	}
 
+	// обратный итератор конца
 	reverse_iterator rend() const noexcept {
 		return reverse_iterator(dummy);
 	}
 
 	/* создание дерева */
 
+	// default 
 	avltree(Compare comparator = Compare(), allocator_type alloc = allocator_type())
 		: dummy(make_dummy()), cmp(comparator), Alc(alloc) { }
 
+	// конструктор по диапазону
 	template <class InputIterator>
 	avltree(InputIterator first, InputIterator last, Compare comparator = Compare(), allocator_type alloc = allocator_type())
 		: dummy(make_dummy()), cmp(comparator), Alc(alloc) {
@@ -245,13 +254,16 @@ public:
 
 	}
 
+	// конструктор через список инициализации
 	avltree(const std::initializer_list<T>& il) : dummy(make_dummy()) {
 		for (const T& element : il) {
 			insert(element);
 		}
 	}
 
+	// конструктор копии
 	avltree(const avltree& tree) : dummy(make_dummy()) {
+
 		//  Размер задаём
 		sz = tree.sz;
 		if (tree.empty()) return;
@@ -274,6 +286,7 @@ public:
 	}
 
 private:
+
 	//  Рекурсивное копирование дерева
 	node* recur_copy_tree(node* source, const node* source_dummy)
 	{
@@ -306,6 +319,7 @@ public:
 
 	/* остальные методы */
 
+	// копирующее =
 	const avltree& operator=(const avltree& other) {
 		if (this == &other) {
 			return *this;
@@ -317,6 +331,7 @@ public:
 		return *this;
 	}
 
+	// move =
 	const avltree& operator=(avltree&& other) {
 		std::swap(dummy, other.dummy);
 		std::swap(sz, other.sz);
@@ -328,23 +343,28 @@ public:
 
 	value_compare value_comp() const noexcept { return cmp; }
 
+	// проверка на пустоту контейнера
 	inline bool empty() const noexcept {
 		return sz == 0;
 	}
 
+	// количество элементов в дереве
 	size_type size() const {
 		return sz;
 	}
 
+	// смена значений двух деревьев
 	void swap(avltree& other) noexcept {
 		std::swap(dummy, other.dummy);
 		std::swap(sz, other.sz);
 	}
 
+	// получение корня дерева
 	node* get_root() const {
 		return dummy->parent;
 	}
 
+	// печать дерева, заваленого набок
 	void print(node* root, int indent = 0) const {
 
 		if (sz == 0) {
@@ -364,6 +384,7 @@ public:
 		print(root->left, indent + 4);
 	}
 
+	// печать баланса каждого узла, заваленная набок
 	void print_balance(node* root, int indent = 0) const {
 
 		if (sz == 0) {
@@ -378,13 +399,16 @@ public:
 
 		if (indent > 0)
 			std::cout << std::setw(indent) << ' ';
-		std::cout << root->balance << std::endl;
+		std::cout << (int)root->balance << std::endl;
 
 		print_balance(root->left, indent + 4);
 	}
 
 private:
 
+	/* вращения */
+
+	// левое вращение
 	void left_rotation(node* x, node* z) {
 
 		node* n = z->left;
@@ -412,6 +436,7 @@ private:
 		x->balance -= 2;
 	}
 
+	// правое вращение
 	void right_rotation(node* x, node* z) {
 
 		node* n = z->right;
@@ -439,6 +464,7 @@ private:
 		x->balance += 2;
 	}
 
+	// большое левое вращение
 	void left_right_rotation(node* x, node* z) {
 
 		node* n = z->right;
@@ -489,6 +515,7 @@ private:
 
 	}
 
+	// большое правое вращение
 	void right_left_rotation(node* x, node* z) {
 
 		node* n = z->left;
@@ -539,6 +566,7 @@ private:
 
 	}
 
+	// перебалансировка
 	void fixup(node* n) {
 
 		if (n->is_nil) {
@@ -562,6 +590,7 @@ private:
 
 public:
 
+	// вставка элемента
 	std::pair<iterator, bool> insert(const T& value) {
 
 		if (sz == 0) {
@@ -642,7 +671,7 @@ public:
 		}
 		sz++;
 
-		// Обновляем баланс узлов вверх по дереву
+		// обновляем баланс узлов вверх по дереву
 		node* temp = n;
 
 		while (!parent->is_nil) {
@@ -664,6 +693,7 @@ public:
 		return { iterator(n), true };
 	}
 
+	// вставка элемента
 	std::pair<iterator, bool> insert(T&& value) {
 
 		if (sz == 0) {
@@ -744,7 +774,7 @@ public:
 		}
 		sz++;
 
-		// Обновляем баланс узлов вверх по дереву
+		// обновляем баланс узлов вверх по дереву
 		node* temp = n;
 
 		while (!parent->is_nil) {
@@ -766,6 +796,7 @@ public:
 		return { iterator(n), true };
 	}
 
+	// вставка диапазона элементов
 	template <class InputIterator>
 	void insert(InputIterator first, InputIterator last) {
 		while (first != last) {
@@ -773,10 +804,12 @@ public:
 		}
 	}
 
+	// вставка в конкретную позицию
 	iterator insert(const_iterator position, const value_type& x) {
 		return std::get<0>(insert(x));
 	}
 
+	// поиск элемента
 	iterator find(const value_type& value) const {
 
 		iterator root(dummy->parent);
@@ -796,6 +829,7 @@ public:
 		return dummy;
 	}
 
+	// возвращает итератор на первый элемент, по значению равный заданному или больший 
 	iterator lower_bound(const value_type& key) {
 
 		iterator root(dummy->parent);
@@ -821,10 +855,12 @@ public:
 
 	}
 
+	// возвращает итератор на первый элемент, по значению равный заданному или больший 
 	const_iterator lower_bound(const value_type& key) const {
 		return const_iterator(const_cast<avltree*>(this)->lower_bound(key));
 	}
 
+	// возвращает итератор на первый элемент, по значению больший заданного
 	iterator upper_bound(const value_type& key) {
 
 		iterator root(dummy->parent);
@@ -854,10 +890,12 @@ public:
 		return root;
 	}
 
+	// возвращает итератор на первый элемент, по значению больший заданного
 	const_iterator upper_bound(const value_type& key) const {
 		return const_iterator(const_cast<avltree*>(this)->upper_bound(key));
 	}
 
+	// подсчет количества элементов с заданным ключом в дереве
 	size_type count(const value_type& key) const {
 
 		size_type res{ 0 };
@@ -881,6 +919,7 @@ public:
 		return res;
 	}
 
+	// диапазон, в котором все элементы равны
 	std::pair<const_iterator, const_iterator> equal_range(const value_type& key) const {
 
 		const_iterator first(find(key));
@@ -914,6 +953,7 @@ public:
 
 	}
 
+	// удаление элемента по итератору
 	iterator erase(iterator elem) {
 
 		if (elem->is_nil) {
@@ -1021,6 +1061,7 @@ public:
 
 	}
 
+	// удаление элемента по ключу
 	size_type erase(const value_type& elem) {
 		iterator it = find(elem);
 		if (!it->is_nil) {
@@ -1032,6 +1073,7 @@ public:
 		}
 	}
 
+	// удаление диапазона элементов
 	iterator erase(const_iterator first, const_iterator last) {
 		while (first != last) {
 			first = erase(first);
@@ -1040,8 +1082,10 @@ public:
 	}
 
 private:
+
 	// вспомогательное для сравнения
 
+	// равенство по структуре и значениям
 	bool equals(node* curr, node* other) const {
 		if (curr->is_nil && other->is_nil) {
 			return true;
@@ -1054,6 +1098,7 @@ private:
 		return false;
 	}
 
+	// <
 	bool less(node* curr, node* other) const {
 		if (curr->is_nil && other->is_nil) {
 			return true;
@@ -1072,6 +1117,7 @@ private:
 		return false;
 	}
 
+	// <=
 	bool less_equal(node* curr, node* other) const {
 		if (curr->is_nil && other->is_nil) {
 			return true;
@@ -1092,6 +1138,7 @@ private:
 public:
 	// сравнение содержимого
 
+	// равенство содержимого
 	bool content_equal(const avltree& other) const {
 
 		if (sz != other.sz) {
@@ -1140,7 +1187,7 @@ public:
 		return less(dummy->parent, other.dummy->parent);
 	}
 
-	//  Очистка дерева (без удаления фиктивной вершины)
+	//  очистка дерева (без удаления фиктивной вершины)
 	void clear() {
 		Free_nodes(dummy->parent);
 		sz = 0;
@@ -1148,7 +1195,8 @@ public:
 	}
 
 private:
-	//  Рекурсивное удаление узлов дерева, не включая фиктивную вершину
+
+	//  рекурсивное удаление узлов дерева, не включая фиктивную вершину
 	void Free_nodes(node* n) {
 		if (n->is_nil) {
 			return;
@@ -1161,6 +1209,7 @@ private:
 	}
 
 public:
+
 	~avltree() {
 		clear(); // рекурсивный деструктор
 		delete_dummy(dummy);

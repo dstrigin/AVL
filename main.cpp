@@ -24,11 +24,11 @@ void info(const avltree<T>& t) {
 
 // uncomment line in order to test
 
-template<typename T> using ContainerTemplate = avltree<T>;
-//template<typename T> using ContainerTemplate = std::multiset<T>;
+//template<typename T> using ContainerTemplate = avltree<T>;
+template<typename T> using ContainerTemplate = std::multiset<T>;
 
 int main() {
-	/*
+	
 	using namespace std;
 	using namespace std::chrono;
 
@@ -47,41 +47,48 @@ int main() {
 
 	high_resolution_clock::time_point t2 = high_resolution_clock::now();
 	duration<double> time_span1 = duration_cast<nanoseconds>(t2 - t1);
-	std::cout << "Created 10.000 elements container in " << time_span1.count() << "ms\n";
+	std::cout << "Created 10.000 elements container in " << time_span1.count() << " s\n\n";
 
 	// copy
 	t1 = high_resolution_clock::now();
 
-	ContainerTemplate<int> ms1(ms);
+	int sum{};
+	for (int i = 0; i < 10000; i++) {
+		ContainerTemplate<int> ms1(ms);
+		sum += ms1.size();
+	}
 	
 	t2 = high_resolution_clock::now();
 	time_span1 = duration_cast<nanoseconds>(t2 - t1);
-	std::cout << "Copied 10.000 elements container in " << time_span1.count() << "ms\n";
+	std::cout << "Copied container in " << time_span1.count() << " s\n\n";
 
 	// creation with range
 	t1 = high_resolution_clock::now();
 
-	ContainerTemplate<int> ms2(ms.begin(), ms.end());
+	sum = 0;
+	for (int i = 0; i < 10000; i++) {
+		ContainerTemplate<int> ms2(ms.begin(), ms.end());
+		sum += ms2.size();
+	}
 
 	t2 = high_resolution_clock::now();
 	time_span1 = duration_cast<nanoseconds>(t2 - t1);
-	std::cout << "Created 10.000 elements container by range in " << time_span1.count() << "ms\n";
+	std::cout << "Created by range in " << time_span1.count() << " s\n\n";
 
 	// find
 	t1 = high_resolution_clock::now();
 
-	int sum = 0;
+	sum = 0;
 	for (int i = 0; i < 10000; i++) {
 		auto it = ms.find(11);
 		if (it != ms.end()) {
 			sum++;
 		}
 	}
-	std::cout << "Just to test: " << sum << "\n";
 
 	t2 = high_resolution_clock::now();
 	time_span1 = duration_cast<nanoseconds>(t2 - t1);
-	std::cout << "Found element in " << time_span1 << " ms\n";
+	std::cout << "Found element in " << time_span1 << " s\n\n";
 
 	// find non-existing
 	t1 = high_resolution_clock::now();
@@ -93,62 +100,106 @@ int main() {
 			sum++;
 		}
 	}
-	std::cout << "Just to test: " << sum << "\n";
 
 	t2 = high_resolution_clock::now();
 	time_span1 = duration_cast<nanoseconds>(t2 - t1);
-	std::cout << "Found that element does not exist in " << time_span1.count() << "ms\n";
+	std::cout << "Found that element does not exist in " << time_span1.count() << " s\n\n";
 
 	// lower_bound
 	t1 = high_resolution_clock::now();
 
-	auto lb = ms.lower_bound(327);
+	sum = 0;
+	for (int i = 0; i < 10000; i++) {
+		auto lb = ms.lower_bound(327);
+		sum += *lb;
+	}
 
 	t2 = high_resolution_clock::now();
 	time_span1 = duration_cast<nanoseconds>(t2 - t1);
-	std::cout << "Found lower_bound of 327 in " << time_span1.count() << "ms\n";
-	std::cout << "It was " << *lb << "\n";
+	std::cout << "Found lower_bound in " << time_span1.count() << " s\n\n";
 
 	// upper_bound
 	t1 = high_resolution_clock::now();
 
-	auto ub = ms.upper_bound(643);
+	sum = 0;
+	for (int i = 0; i < 10000; i++) {
+		auto ub = ms.upper_bound(643);
+		sum += *ub;
+	};
 
 	t2 = high_resolution_clock::now();
 	time_span1 = duration_cast<nanoseconds>(t2 - t1);
-	std::cout << "Found upper_bound of 643 in " << time_span1.count() << "ms\n";
-	std::cout << "It was " << *ub << "\n";
+	std::cout << "Found upper_bound in " << time_span1.count() << " s\n\n";
 
 	// erase
 	t1 = high_resolution_clock::now();
 
-	ms.erase(*lb);
+	ms.erase(*ms.lower_bound(327));
 
 	t2 = high_resolution_clock::now();
 	time_span1 = duration_cast<nanoseconds>(t2 - t1);
-	std::cout << "Erased lower_bound of 327 in " << time_span1.count() << "ms\n";
+	std::cout << "Erased lower_bound of 327 in " << time_span1.count() << " s\n\n";
 
 	t1 = high_resolution_clock::now();
 
-	ms.erase(*ub);
+	ms.erase(*ms.upper_bound(643));
 
 	t2 = high_resolution_clock::now();
 	time_span1 = duration_cast<nanoseconds>(t2 - t1);
-	std::cout << "Erased upper_bound of 643 in " << time_span1.count() << "ms\n";
+	std::cout << "Erased upper_bound of 643 in " << time_span1.count() << " s\n\n";
 
 	t1 = high_resolution_clock::now();
-
-	ms.erase(ms.get_root());
-
-	t2 = high_resolution_clock::now();
-	time_span1 = duration_cast<nanoseconds>(t2 - t1);
-	std::cout << "Erased root in " << time_span1.count() << "ms\n";*/
 
 	std::cout << "Just in order to show that it's balancing, let's insert the same element 31 times and print the tree out\n";
 	avltree<int> t;
 	for (int i = 1; i < 32; i++) {
 		t.insert(7);
-		info(t);
 	}
+
+	info(t);
 		 
 }
+
+/*
+
+	avltree:
+
+Created 10.000 elements container in 0.0011876 s
+
+Copied container in 3.55314 s
+
+Created by range in 0.0012173 s
+
+Found element in 0 s
+
+Found that element does not exist in 0 s
+
+Found lower_bound in 1.48e-05 s
+
+Found upper_bound in 1e-07 s
+
+Erased lower_bound of 327 in 2e-07 s
+
+Erased upper_bound of 643 in 1e-07 s
+
+	multiset:
+
+Created 10.000 elements container in 0.0017846 s
+
+Copied container in 8.50776 s
+
+Created by range in 10.47 s
+
+Found element in 1e-07s s
+
+Found that element does not exist in 0 s
+
+Found lower_bound in 1e-07 s
+
+Found upper_bound in 1e-07 s
+
+Erased lower_bound of 327 in 6.4e-06 s
+
+Erased upper_bound of 643 in 3.1e-06 s
+
+*/
